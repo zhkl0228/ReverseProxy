@@ -102,7 +102,7 @@ public class NIOPortForwarder extends AbstractPortForwarder implements
 			RouteForwarder forwarder = createForward(socket);
 			forwards.put(forwarder.hashCode(), forwarder);
 		} catch(IOException e) {
-			e.printStackTrace();
+			log.info("processAccept server={}", server, e);
 		}
 	}
 	

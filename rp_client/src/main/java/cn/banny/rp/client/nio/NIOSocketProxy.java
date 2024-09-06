@@ -136,7 +136,7 @@ class NIOSocketProxy extends AbstractSocketProxy implements NIOSocketSession, So
 	@Override
 	public void writeData(ByteBuffer buffer) {
 		if(closed) {
-			log.warn("writeData closed: proxy=" + this + ", session=" + route);
+            log.warn("writeData closed: proxy={}, session={}", this, route);
 			return;
 		}
 
@@ -163,7 +163,7 @@ class NIOSocketProxy extends AbstractSocketProxy implements NIOSocketSession, So
 			
 			close(true);
 		} catch(BufferOverflowException e) {
-			log.warn("writeBuffer=" + writeBuffer + ", buffer=" + buffer, e);
+            log.warn("writeBuffer={}, buffer={}", writeBuffer, buffer, e);
 			processException(session, new IOException("writeBuffer=" + writeBuffer + ", buffer=" + buffer, e));
 			
 			close(true);
@@ -189,7 +189,7 @@ class NIOSocketProxy extends AbstractSocketProxy implements NIOSocketSession, So
 			queueLock.unlock();
 		}
 
-		log.debug("processWrite writeBuffer=" + writeBuffer + ", queueSize=" + bufferQueue.size() + ", poolSize=" + (bufferPool.totalMemory() / 1024) + "kb" + ", proxy=" + this + ", session=" + route);
+        log.debug("processWrite writeBuffer={}, queueSize={}, poolSize={}kb, proxy={}, session={}", writeBuffer, bufferQueue.size(), bufferPool.totalMemory() / 1024, this, route);
 		writeBuffer.flip();
 		session.write(writeBuffer);
 

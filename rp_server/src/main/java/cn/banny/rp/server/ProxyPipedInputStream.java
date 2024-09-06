@@ -1,5 +1,8 @@
 package cn.banny.rp.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -11,6 +14,8 @@ import java.net.SocketTimeoutException;
  *
  */
 public class ProxyPipedInputStream extends PipedInputStream {
+
+	private static final Logger log = LoggerFactory.getLogger(ProxyPipedInputStream.class);
 	
 	public ProxyPipedInputStream(PipedOutputStream src, int timeout) throws IOException {
 		super(src);
@@ -30,7 +35,7 @@ public class ProxyPipedInputStream extends PipedInputStream {
 			field.setAccessible(true);
 			return field.getBoolean(this);
 		} catch(Exception e) {
-			e.printStackTrace();
+			log.warn("getBool name={}", name, e);
 			return false;
 		}
 	}
@@ -41,7 +46,7 @@ public class ProxyPipedInputStream extends PipedInputStream {
 			field.setAccessible(true);
 			return (Thread) field.get(this);
 		} catch(Exception e) {
-			e.printStackTrace();
+			log.warn("getWriteSide", e);
 			return null;
 		}
 	}
@@ -52,7 +57,7 @@ public class ProxyPipedInputStream extends PipedInputStream {
 			field.setAccessible(true);
 			field.set(this, thread);
 		} catch(Exception e) {
-			e.printStackTrace();
+			log.warn("setReadSide", e);
 		}
 	}
 	

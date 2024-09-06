@@ -1,8 +1,8 @@
 package cn.banny.rp;
 
 import java.io.Closeable;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -115,24 +115,20 @@ public class ReverseProxy {
 	}
 	
 	public static boolean isEmpty(String str) {
-		return str == null || str.trim().length() < 1;
+		return str == null || str.trim().isEmpty();
 	}
 	
-	public static String readUTF(ByteBuffer buffer) throws UnsupportedEncodingException {
+	public static String readUTF(ByteBuffer buffer) {
 		int len = buffer.getShort() & 0xFFFF;
-		String str = new String(buffer.array(), buffer.position(), len, "UTF-8");
+		String str = new String(buffer.array(), buffer.position(), len, StandardCharsets.UTF_8);
 		buffer.position(buffer.position() + len);
 		return str;
 	}
 	
 	public static void writeUTF(ByteBuffer buffer, String str) {
 		byte[] bs;
-		try {
-			bs = str.getBytes("UTF-8");
-		} catch(UnsupportedEncodingException e) {
-			bs = str.getBytes();
-		}
-		buffer.putShort((short) bs.length);
+        bs = str.getBytes(StandardCharsets.UTF_8);
+        buffer.putShort((short) bs.length);
 		buffer.put(bs);
 	}
 

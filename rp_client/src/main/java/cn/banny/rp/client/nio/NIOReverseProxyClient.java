@@ -194,9 +194,7 @@ public class NIOReverseProxyClient extends AbstractReverseProxyClient implements
 		} finally {
 			writeBuffer.compact();
 
-			if(log.isDebugEnabled()) {
-				log.debug("processWrite writeBuffer=" + writeBuffer);
-			}
+			log.debug("processWrite writeBuffer={}", writeBuffer);
 		}
 	}
 

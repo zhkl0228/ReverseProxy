@@ -60,11 +60,11 @@ public class RequestConnect {
 	
 	public InetSocketAddress createInetSocketAddress() {
 		if (address != null) {
-			log.debug("createInetSocketAddress address=" + address + ", port=" + port);
+            log.debug("createInetSocketAddress address={}, port={}", address, port);
 			return new InetSocketAddress(address, port);
 		}
 
-		log.debug("createInetSocketAddress host=" + host + ", port=" + port);
+        log.debug("createInetSocketAddress host={}, port={}", host, port);
 		return new InetSocketAddress(host, port);
 	}
 

@@ -239,15 +239,14 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 		long requestTime = System.currentTimeMillis();
 		if(in.remaining() >= 4) {//客户端版本号
 			int version = in.getInt();
-			AbstractRoute ar = AbstractRoute.class.cast(route);
-			ar.version = version;
+            route.version = version;
 			
 			if(version >= 0x10001 && in.get() == 1) {
-				ar.extraData = ReverseProxy.readUTF(in);
+				route.extraData = ReverseProxy.readUTF(in);
 			}
 			
 			if(version >= 0x10003 && in.get() == 1) {
-				ar.canChangeIp = true;
+				route.canChangeIp = true;
 			}
 			
 			int mask = version & 0xFFFF;
@@ -258,7 +257,7 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 			if(mask >= 0x11 && in.hasRemaining() && in.get() == 1) {//have device info
 				byte[] zipDeviceData = new byte[in.getInt()];
 				in.get(zipDeviceData);
-				ar.setDeviceData(zipDeviceData);
+				route.setDeviceData(zipDeviceData);
 			}
 		}
 		AuthResult result = authHandler == null ? null : authHandler.auth(username, password);

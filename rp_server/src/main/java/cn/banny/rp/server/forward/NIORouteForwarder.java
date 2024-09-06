@@ -143,7 +143,7 @@ public class NIORouteForwarder extends AbstractRouteForwarder implements
 				bufferQueue.poll();
 			}
 
-			log.debug("processWrite writeBuffer=" + writeBuffer + ", queueSize=" + bufferQueue.size());
+            log.debug("processWrite writeBuffer={}, queueSize={}", writeBuffer, bufferQueue.size());
 			writeBuffer.flip();
 			session.write(writeBuffer);
 			

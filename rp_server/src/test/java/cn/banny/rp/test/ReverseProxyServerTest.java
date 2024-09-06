@@ -4,7 +4,6 @@ import cn.banny.rp.Attribute;
 import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.Route;
 import cn.banny.rp.server.AbstractServerHandler;
-import cn.banny.rp.server.ReverseProxyServer;
 import cn.banny.rp.server.ServerHandler;
 import cn.banny.rp.server.mina.MinaReverseProxyServer;
 import cn.banny.rp.server.mina.MinaServerHandler;
@@ -36,13 +35,18 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
+import java.net.Authenticator;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
 import java.net.Proxy.Type;
+import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhkl0228
@@ -141,14 +145,14 @@ public class ReverseProxyServerTest {
 					try {
 						route.startForward(8888, "scp66.3322.org", 31000);
 					} catch(IOException e) {
-						e.printStackTrace();
+						e.printStackTrace(System.err);
 					}
 				}
 				if ("bb".equalsIgnoreCase(line)) {
 					handler.sendBroadcast("broadcast test".getBytes());
 				}
-				
-				Thread.sleep(1000);
+
+				TimeUnit.SECONDS.sleep(1);
 			}
 			ReverseProxy.closeQuietly(scanner);
 		} finally {
@@ -339,7 +343,7 @@ public class ReverseProxyServerTest {
 		HttpClientBuilder builder = HttpClientBuilder.create().disableAuthCaching();
 		builder.disableCookieManagement().disableRedirectHandling();
 		builder.setRetryHandler(new DefaultHttpRequestRetryHandler(3, true));
-		builder.setSslcontext(ctx);
+		builder.setSSLContext(ctx);
 		proxyClient = builder.setDefaultRequestConfig(config).setConnectionManager(manager).build();
 		ReverseProxyServerTest.manager = manager;
 		return proxyClient;

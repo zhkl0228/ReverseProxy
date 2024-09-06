@@ -5,7 +5,6 @@ import cn.banny.utils.IOUtils;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ public class ReverseProxyDaemon implements Daemon {
 	public void init(DaemonContext context) throws Exception {
 		FileInputStream inputStream = null;
 		try {
-			inputStream = new FileInputStream(new File("config.xml"));
+			inputStream = new FileInputStream("config.xml");
 			remoteServers = ReverseProxyProcrun.parseRemoteServers(inputStream);
 			if(remoteServers == null || remoteServers.isEmpty()) {
 				throw new Exception("config.xml error!");

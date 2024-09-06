@@ -46,7 +46,7 @@ public class BIOSocksServer implements SocksServer, Runnable, ThreadFactory {
 
         serverSocket = new ServerSocket();
         serverSocket.bind(bind);
-        log.debug("start bind port: " + getBindPort());
+        log.debug("start bind port: {}", getBindPort());
         canStop = false;
         active = true;
         executorService.submit(this);

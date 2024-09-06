@@ -79,13 +79,13 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 			X509TrustManager tm = new X509TrustManager() {
 				public void checkClientTrusted(X509Certificate[] certs, String authType) {
 					if (log.isDebugEnabled()) {
-						log.debug("checkClientTrusted certs=" + Arrays.toString(certs) + ", authType=" + authType);
+                        log.debug("checkClientTrusted certs={}, authType={}", Arrays.toString(certs), authType);
 					}
 				}
 
 				public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
 					if (log.isDebugEnabled()) {
-						log.debug("checkServerTrusted certs=" + Arrays.toString(certs) + ", authType=" + authType);
+                        log.debug("checkServerTrusted certs={}, authType={}", Arrays.toString(certs), authType);
 					}
 
 					if (certs == null || certs.length == 0 || StringUtils.isEmpty(authType)) {
@@ -262,7 +262,7 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 			SSLEngineResult result = engine.unwrap(buffer, decryptedIn);
 			decryptedIn.flip();
 			if (log.isDebugEnabled()) {
-				log.debug("processRead " + session.socket().getRemoteSocketAddress() + " result=" + result.getStatus() + ", decryptedIn=" + decryptedIn);
+                log.debug("processRead {} result={}, decryptedIn={}", session.socket().getRemoteSocketAddress(), result.getStatus(), decryptedIn);
 			}
 			switch (result.getStatus()) {
 				case BUFFER_UNDERFLOW:
@@ -291,7 +291,7 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 		SSLEngineResult result;
 		SSLEngineResult.HandshakeStatus status = engine.getHandshakeStatus();
 		if (log.isDebugEnabled()) {
-			log.debug("doHandshake status=" + status + ", key=" + key + ", buffer=" + buffer);
+            log.debug("doHandshake status={}, key={}, buffer={}", status, key, buffer);
 		}
 
 		try {
@@ -312,7 +312,7 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 		switch (status) {
 			case NEED_TASK:
 				if (log.isDebugEnabled()) {
-					log.debug(sc.socket().getRemoteSocketAddress() + " NEED_TASK");
+                    log.debug("{} NEED_TASK", sc.socket().getRemoteSocketAddress());
 				}
 				// Run the delegated SSL/TLS tasks
 				Runnable task;
@@ -330,7 +330,7 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 						return;
 					}
 					if(log.isDebugEnabled()) {
-						log.debug("doHandshake encryptedIn=" + encryptedIn + ", decryptedIn=" + decryptedIn);
+                        log.debug("doHandshake encryptedIn={}, decryptedIn={}", encryptedIn, decryptedIn);
 					}
 
 					result = engine.unwrap(encryptedIn, decryptedIn);
@@ -339,12 +339,12 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 				}
 
 				if(log.isDebugEnabled()) {
-					log.debug("doHandshake encryptedIn=" + encryptedIn + ", decryptedIn=" + decryptedIn);
+                    log.debug("doHandshake encryptedIn={}, decryptedIn={}", encryptedIn, decryptedIn);
 				}
 				break;
 			case NEED_WRAP:
 				if(log.isDebugEnabled()) {
-					log.debug("doHandshake encryptedOut=" + encryptedOut + ", decryptedOut=" + decryptedOut);
+                    log.debug("doHandshake encryptedOut={}, decryptedOut={}", encryptedOut, decryptedOut);
 				}
 
 				decryptedOut.flip();
@@ -352,7 +352,7 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 				decryptedOut.compact();
 
 				if(log.isDebugEnabled()) {
-					log.debug("doHandshake encryptedOut=" + encryptedOut + ", decryptedOut=" + decryptedOut);
+                    log.debug("doHandshake encryptedOut={}, decryptedOut={}", encryptedOut, decryptedOut);
 				}
 
 				encryptedOut.flip();
@@ -360,17 +360,17 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 				encryptedOut.compact();
 
 				if(log.isDebugEnabled()) {
-					log.debug("doHandshake encryptedOut=" + encryptedOut + ", decryptedOut=" + decryptedOut);
+                    log.debug("doHandshake encryptedOut={}, decryptedOut={}", encryptedOut, decryptedOut);
 				}
 				break;
 			case FINISHED:
 				if (log.isDebugEnabled()) {
-					log.debug(sc.socket().getRemoteSocketAddress() + " FINISHED");
+                    log.debug("{} FINISHED", sc.socket().getRemoteSocketAddress());
 				}
 				return;
 			case NOT_HANDSHAKING:
 				if (log.isDebugEnabled()) {
-					log.debug(sc.socket().getRemoteSocketAddress() + " NOT_HANDSHAKING");
+                    log.debug("{} NOT_HANDSHAKING", sc.socket().getRemoteSocketAddress());
 				}
 				// handshake has been completed at this point, no need to
 				// check the status of the SSLEngineResult;
@@ -384,15 +384,15 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 			case BUFFER_UNDERFLOW:
 				// Return as we do not have enough data to continue processing
 				// the handshake
-				log.info(sc.socket().getRemoteSocketAddress() + " BUFFER_UNDERFLOW");
+                log.info("{} BUFFER_UNDERFLOW", sc.socket().getRemoteSocketAddress());
 				return;
 			case BUFFER_OVERFLOW:
-				log.info(sc.socket().getRemoteSocketAddress() + " BUFFER_OVERFLOW");
+                log.info("{} BUFFER_OVERFLOW", sc.socket().getRemoteSocketAddress());
 				// Return as the encrypted buffer has not been cleared yet
 				return;
 			case CLOSED:
 				if (log.isDebugEnabled()) {
-					log.debug(sc.socket().getRemoteSocketAddress() + " CLOSED");
+                    log.debug("{} CLOSED", sc.socket().getRemoteSocketAddress());
 				}
 				if (engine.isOutboundDone()) {
 					sc.socket().shutdownOutput();// stop sending
@@ -400,7 +400,7 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 				return;
 			case OK:
 				if (log.isDebugEnabled()) {
-					log.debug(sc.socket().getRemoteSocketAddress() + " OK");
+                    log.debug("{} OK", sc.socket().getRemoteSocketAddress());
 				}
 				// handshaking can continue.
 				break;
@@ -424,7 +424,7 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 			SSLEngineResult result = engine.wrap(writeBuffer, encryptedOut);
 			encryptedOut.flip();
 			if (log.isDebugEnabled()) {
-				log.debug("processWrite " + session.socket().getRemoteSocketAddress() + " result=" + result.getStatus() + ", writeBuffer=" + writeBuffer + ", encryptedOut=" + encryptedOut);
+                log.debug("processWrite {} result={}, writeBuffer={}, encryptedOut={}", session.socket().getRemoteSocketAddress(), result.getStatus(), writeBuffer, encryptedOut);
 			}
 			switch (result.getStatus()) {
 				case BUFFER_UNDERFLOW:
@@ -461,7 +461,7 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 			writeBuffer.compact();
 
 			if(log.isDebugEnabled()) {
-				log.debug("processWrite encryptedOut=" + encryptedOut + ", writeBuffer=" + writeBuffer);
+                log.debug("processWrite encryptedOut={}, writeBuffer={}", encryptedOut, writeBuffer);
 			}
 		}
 	}

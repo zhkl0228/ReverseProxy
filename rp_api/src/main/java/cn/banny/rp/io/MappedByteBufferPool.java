@@ -19,7 +19,6 @@
 package cn.banny.rp.io;
 
 import java.nio.ByteBuffer;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;

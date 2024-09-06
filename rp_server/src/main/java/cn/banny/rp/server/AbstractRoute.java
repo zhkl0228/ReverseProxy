@@ -88,7 +88,7 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	public final void registerReceiver(ReverseProxyReceiver receiver) {
 		ReverseProxyReceiver last = receivers.put(receiver.hashCode(), receiver);
 		if (last != null) {
-			log.warn("registerReceiver repeated receiver: " + receiver + ", last=" + last);
+            log.warn("registerReceiver repeated receiver: {}, last={}", receiver, last);
 		}
 	}
 	
@@ -127,7 +127,7 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 		int socket = in.getInt();
 		ReverseProxyReceiver receiver = receivers.get(socket);
 		if(receiver == null) {
-			log.debug("receivedMessage receiver is null: 0x" + Integer.toHexString(socket) + ", type=0x" + Integer.toHexString(type));
+            log.debug("receivedMessage receiver is null: 0x{}, type=0x{}", Integer.toHexString(socket), Integer.toHexString(type));
 			return;
 		}
 		
@@ -385,12 +385,7 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	private final Map<InetSocketAddress, Traffic> socketTraffic = new ConcurrentHashMap<>();
 
 	private Traffic getSocketTraffic(InetSocketAddress address) {
-		Traffic t = socketTraffic.get(address);
-		if(t == null) {
-			t = new Traffic(address);
-			socketTraffic.put(address, t);
-		}
-		return t;
+        return socketTraffic.computeIfAbsent(address, Traffic::new);
 	}
 	public void addSendTraffic(InetSocketAddress address, long traffic) {
 		_sendTraffic += traffic;

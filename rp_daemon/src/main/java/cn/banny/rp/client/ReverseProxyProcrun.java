@@ -10,6 +10,7 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhkl0228
@@ -36,7 +37,7 @@ public class ReverseProxyProcrun {
 			daemon.init(null);
 			daemon.start();
 		} catch(Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(System.err);
 			daemon.destroy();
 			return;
 		}
@@ -54,7 +55,7 @@ public class ReverseProxyProcrun {
 					break;
 				}
 				
-				Thread.sleep(1000);
+				TimeUnit.SECONDS.sleep(1);
 			}
 			ReverseProxy.closeQuietly(scanner);
 		} finally {

@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>cn.banny</groupId>
+	<groupId>com.github.zhkl0228</groupId>
 	<artifactId>rp-parent</artifactId>
 	<packaging>pom</packaging>
 	<version>1.0.15</version>
@@ -14,6 +14,25 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	<description>Reverse proxy</description>
+	<url>https://github.com/zhkl0228/ReverseProxy</url>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<name>zhkl0228</name>
+			<email>zhkl0228@gmail.com</email>
+		</developer>
+	</developers>
+	<scm>
+		<connection>scm:git:git@github.com:zhkl0228/ReverseProxy.git</connection>
+		<developerConnection>scm:git:git@github.com:zhkl0228/ReverseProxy.git</developerConnection>
+		<url>git@github.com:zhkl0228/ReverseProxy.git</url>
+	</scm>
 	<build>
 		<plugins>
 			<plugin>
@@ -21,8 +40,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.3</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -49,6 +68,19 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
@@ -60,15 +92,13 @@
 		</dependency>
 	</dependencies>
 	<distributionManagement>
-		<repository>
-			<id>releases</id>
-			<name>Releases Repository</name>
-			<url>http://hy1801.v6.rocks:8081/nexus/content/repositories/releases/</url>
-		</repository>
 		<snapshotRepository>
-			<id>snapshots</id>
-			<name>Snapshots Repository</name>
-			<url>http://hy1801.v6.rocks:8081/nexus/content/repositories/snapshots/</url>
+			<id>oss</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</snapshotRepository>
+		<repository>
+			<id>oss</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
 	</distributionManagement>
 </project>

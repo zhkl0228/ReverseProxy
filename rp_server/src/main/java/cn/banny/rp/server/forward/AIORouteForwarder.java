@@ -86,7 +86,7 @@ public class AIORouteForwarder extends AbstractRouteForwarder implements RouteFo
 				bufferQueue.poll();
 			}
 
-			log.debug("processWrite writeBuffer=" + writeBuffer + ", queueSize=" + bufferQueue.size());
+            log.debug("processWrite writeBuffer={}, queueSize={}", writeBuffer, bufferQueue.size());
 			writing = true;
 			writeBuffer.flip();
 			socket.write(writeBuffer, writeBuffer, new CompletionHandler<Integer, ByteBuffer>() {

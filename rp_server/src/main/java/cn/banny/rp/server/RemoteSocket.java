@@ -127,7 +127,7 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 	}
 
 	@Override
-	public void bind(SocketAddress bindpoint) throws IOException {
+	public void bind(SocketAddress bindpoint) {
 		InetSocketAddress address = (InetSocketAddress) bindpoint;
 		this.localAddr = address.getAddress();
 		this.localPort = address.getPort();
@@ -139,7 +139,7 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 	}
 
 	@Override
-	public void sendUrgentData(int data) throws IOException {
+	public void sendUrgentData(int data) {
 		throw new UnsupportedOperationException("sendUrgentData");
 	}
 
@@ -186,7 +186,7 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 	}
 
 	@Override
-	public void setSoLinger(boolean on, int linger) throws SocketException {
+	public void setSoLinger(boolean on, int linger) {
 		throw new UnsupportedOperationException("setSoLinger");
 	}
 
@@ -326,7 +326,7 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 			pipedOut.write(data, offset, length);
 			pipedOut.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.err);
 			ReverseProxy.closeQuietly(pipedOut);
 		}
 	}

@@ -99,7 +99,7 @@ public abstract class AbstractRouteContext implements RouteContext {
 		@Override
 		public boolean getBoolean() {
 			Boolean val = getAttribute(key, Boolean.class);
-			return val == null ? false : val;
+			return val != null && val;
 		}
 		
 		@Override

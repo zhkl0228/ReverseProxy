@@ -16,6 +16,7 @@ import java.net.InetAddress;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author zhkl0228
@@ -80,7 +81,7 @@ public abstract class AbstractSocksHandler<T extends Closeable> implements Forwa
 		} catch(IOException | BufferUnderflowException t) {
 			failed(t, socket);
 		} catch(Exception e) {
-			log.warn("parse read buffer failed: " + e.getMessage(), e);
+            log.warn("parse read buffer failed: {}", e.getMessage(), e);
 			failed(e, socket);
 		} finally {
 			readBuffer.clear();
@@ -90,26 +91,25 @@ public abstract class AbstractSocksHandler<T extends Closeable> implements Forwa
 
 	@Override
 	public void notifyConnectSuccess(RouteForwarder forwarder, InetAddress localAddr, int localPort) {
-		if(socksVersion == 0x4) {
-			ByteBuffer buffer = ByteBuffer.allocate(8);
+        ByteBuffer buffer;
+        if(socksVersion == 0x4) {
+            buffer = ByteBuffer.allocate(8);
 			buffer.order(ByteOrder.BIG_ENDIAN);
 			buffer.put(new byte[] { 0x0, 0x5A });
 			buffer.putShort((short) socksPort);
 			buffer.put(socksIp, 0, 4);
-			buffer.flip();
-			
-			forwarder.writeData(buffer);
-		} else {
-			ByteBuffer buffer = ByteBuffer.allocate(10);
+
+        } else {
+            buffer = ByteBuffer.allocate(10);
 			buffer.order(ByteOrder.BIG_ENDIAN);
 			buffer.putInt(0x5000001);
 			buffer.put(localAddr.getAddress(), 0, 4);
 			buffer.putShort((short) localPort);
-			buffer.flip();
-			
-			forwarder.writeData(buffer);
-		}
-	}
+
+        }
+        buffer.flip();
+        forwarder.writeData(buffer);
+    }
 
 	@Override
 	public void notifyForwarderClosed(RouteForwarder forwarder) {
@@ -145,9 +145,9 @@ public abstract class AbstractSocksHandler<T extends Closeable> implements Forwa
 		}
 		String user;
 		try {
-			user = new String(baos.toByteArray(), "UTF-8");
+			user = baos.toString("UTF-8");
 		} catch(UnsupportedEncodingException e) {
-			user = new String(baos.toByteArray());
+			user = baos.toString();
 		}
 		
 		if(ipv4[0] == 0 && ipv4[1] == 0 && ipv4[2] == 0 && ipv4[3] != 0) { // socksv4a
@@ -155,7 +155,7 @@ public abstract class AbstractSocksHandler<T extends Closeable> implements Forwa
 			while((b = readBuffer.get()) != 0) {
 				baos.write(b);
 			}
-			String host = new String(baos.toByteArray(), "UTF-8");
+			String host = baos.toString("UTF-8");
 			beforeForward(socket);
 			InetAddress address = proxyServer.addForward(socket, host, port, this, user, null);
 			ipv4 = address.getAddress();
@@ -189,12 +189,8 @@ public abstract class AbstractSocksHandler<T extends Closeable> implements Forwa
 			byte[] hb = new byte[readBuffer.get()];
 			readBuffer.get(hb);
 			String host;
-			try {
-				host = new String(hb, "UTF-8");
-			} catch(IOException e) {
-				host = new String(hb);
-			}
-			int port = readBuffer.getShort() & 0xFFFF;
+            host = new String(hb, StandardCharsets.UTF_8);
+            int port = readBuffer.getShort() & 0xFFFF;
 			beforeForward(socket);
 			proxyServer.addForward(socket, host, port, this, user, pass);
 			return false;
@@ -230,18 +226,10 @@ public abstract class AbstractSocksHandler<T extends Closeable> implements Forwa
 		readBuffer.get(ub);
 		byte[] pb = new byte[readBuffer.get()];
 		readBuffer.get(pb);
-		
-		try {
-			user = new String(ub, "UTF-8");
-		} catch(IOException e) {
-			user = new String(ub);
-		}
-		try {
-			pass = new String(pb, "UTF-8");
-		} catch(IOException e) {
-			pass = new String(pb);
-		}
-		authResult = authHandler.auth(user, pass);
+
+        user = new String(ub, StandardCharsets.UTF_8);
+        pass = new String(pb, StandardCharsets.UTF_8);
+        authResult = authHandler.auth(user, pass);
 		if(authResult == null) {
 			authResult = AuthResult.authOk(0L, null);
 		}

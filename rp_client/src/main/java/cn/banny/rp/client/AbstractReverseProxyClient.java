@@ -476,9 +476,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 				new Thread(new StreamPipe(server, server.getInputStream(), client, client.getOutputStream(), listener)).start();
 				new Thread(new StreamPipe(client, client.getInputStream(), server, server.getOutputStream(), listener)).start();
 			} catch (IOException e) {
-				if (log.isDebugEnabled()) {
-					log.debug("parseStartProxy listenPort=" + listenPort + ", host=" + host + ", port=" + port + ", serverHost=" + serverHost, e);
-				}
+				log.debug("parseStartProxy listenPort={}, host={}, port={}, serverHost={}", listenPort, host, port, serverHost, e);
 
 				ReverseProxy.closeQuietly(server);
 				ReverseProxy.closeQuietly(client);
@@ -508,7 +506,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		if(in.get() == 0) { // no exception
 			portForwardMap.remove(remotePort);
-			log.debug(label + '[' + dateFormat.format(new Date()) + "]parseRequestForward bind remote port#" + remotePort + " successfully!");
+            log.debug("{}[{}]parseRequestForward bind remote port#{} successfully!", label, dateFormat.format(new Date()), remotePort);
 
 			String host = ReverseProxy.readUTF(in);
 			int port = in.getShort() & 0xffff;
@@ -516,7 +514,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 				authListener.onPortForward(this, remotePort, host, port);
 			}
 		} else {
-			log.info(label + '[' + dateFormat.format(new Date()) + "]parseRequestForward bind remote port#" + remotePort + " failed: " + ReverseProxy.readUTF(in));
+            log.info("{}[{}]parseRequestForward bind remote port#{} failed: {}", label, dateFormat.format(new Date()), remotePort, ReverseProxy.readUTF(in));
 		}
 	}
 
@@ -565,7 +563,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 	private void parseClose(SocketChannel session, int socket) throws IOException {
 		SocketProxy socketProxy = socketMap.get(socket);
 		if(socketProxy == null) {
-			log.debug("parseClose proxy is null: session=" + session);
+            log.debug("parseClose proxy is null: session={}", session);
 			return;
 		}
 		

@@ -29,7 +29,7 @@ public class MinaServerHandler extends AbstractServerHandler<IoSession> implemen
 	public void sessionClosed(IoSession session) {
 		AbstractRoute route = sessions.remove(session.getId());
 		if (route == null) {
-			log.warn("sessionClosed routes is null: " + session);
+            log.warn("sessionClosed routes is null: {}", session);
 			return;
 		}
 		route.notifyRouteClosed();
@@ -57,7 +57,7 @@ public class MinaServerHandler extends AbstractServerHandler<IoSession> implemen
 			throws Exception {
 		AbstractRoute route = this.sessions.get(session.getId());
 		if (route == null) {
-			log.warn("messageReceived route is null: " + session);
+            log.warn("messageReceived route is null: {}", session);
 			return;
 		}
 		ByteBuffer msg = (ByteBuffer) message;

@@ -99,7 +99,7 @@ public class NIOProxyServer extends AbstractProxyServer<SocketChannel> implement
 			NIOSocksHandler handler = new NIOSocksHandler(this, selector, socket, authHandler, supportV4);
 			socket.register(selector, SelectionKey.OP_READ, handler);
 		} catch(IOException e) {
-			e.printStackTrace();
+			log.info("processAccept server={}", server, e);
 		}
 	}
 

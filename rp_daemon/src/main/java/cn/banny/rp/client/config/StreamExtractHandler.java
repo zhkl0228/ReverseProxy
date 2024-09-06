@@ -62,7 +62,7 @@ public class StreamExtractHandler extends PumpStreamHandler {
 
 	private String[] extractLines(InputStream in, Charset charset) {
 		BufferedReader reader = null;
-		Vector<String> lines = new Vector<String>();
+		Vector<String> lines = new Vector<>();
 		try {
 			reader = new BufferedReader(new InputStreamReader(in, charset));
 			

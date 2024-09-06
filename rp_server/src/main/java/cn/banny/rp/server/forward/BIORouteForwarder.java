@@ -47,7 +47,7 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
     @Override
     public void run() {
         try {
-            log.debug("start accept channel socket on port: " + serverSocket.getLocalPort());
+            log.debug("start accept channel socket on port: {}", serverSocket.getLocalPort());
             Socket socket = serverSocket.accept();
             ReverseProxy.closeQuietly(serverSocket);
             serverSocket = null;
@@ -56,7 +56,7 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
             executorService.submit(new StreamPipe(this.socket, this.socket.getInputStream(), socket, socket.getOutputStream(), listener));
             executorService.submit(new StreamPipe(socket, socket.getInputStream(), this.socket, this.socket.getOutputStream(), listener));
         } catch (IOException e) {
-            log.debug("Channel server socket accept failed: listenPort=" + serverSocket.getLocalPort(), e);
+            log.debug("Channel server socket accept failed: listenPort={}", serverSocket.getLocalPort(), e);
             close();
         }
     }

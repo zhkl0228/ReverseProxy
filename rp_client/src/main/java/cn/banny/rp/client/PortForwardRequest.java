@@ -2,6 +2,7 @@ package cn.banny.rp.client;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author zhkl0228
@@ -25,7 +26,7 @@ public class PortForwardRequest {
 	ByteBuffer createBuffer() throws UnsupportedEncodingException {
 		tryCount++;
 		
-		byte[] hostBytes = host.getBytes("UTF-8");
+		byte[] hostBytes = host.getBytes(StandardCharsets.UTF_8);
 		ByteBuffer buffer = ByteBuffer.allocate(hostBytes.length + 12);
 		buffer.position(4);
 		buffer.put((byte) 0xA);
