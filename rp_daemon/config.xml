@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rp debug="false">
+	<!-- password formula: MD5_32, MD5_16 -->
+	<server host="localhost" port="2016" username="zhkl0228" password="MD5_32(123456)" extra="Test" ssl="true" change="/usr/sbin/adsl-stop">
+		<forward remotePort="1080" toHost="socks" />
+	</server>
+	<!--
+	<server host="mm.gzmtx.cn" port="9888" username="zhkl0228" password="123456" extra="MacBookProT2">
+		<forward remotePort="8088" toHost="localhost" toPort="8080" />
+	</server>
+	<server host="192.168.1.144" port="11000" username="zhkl0228" password="123456" extra="MacBookProT2" />
+	-->
+</rp>

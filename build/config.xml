@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rp debug="false">
+	<!-- password formula: MD5_32, MD5_16 -->
+	<!--
+	<server host="localhost" port="2018" username="zhkl0228" password="MD5_16(123456)" extra="Test" change="/usr/sbin/adsl-stop">
+		<forward remotePort="8888" toHost="scp6.3322.org" toPort="31000" />
+	</server>
+	-->
+</rp>

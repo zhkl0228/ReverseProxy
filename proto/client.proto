@@ -1,0 +1,44 @@
+package cn.banny.rp.msg;
+
+option java_package = "cn.banny.rp.msg";
+option java_multiple_files = true;
+
+message ReverseProxyResponse {
+	required	int32					socket					=	1;
+	optional	bool					keepAlive				=	2;
+	optional	RequestConnectResponse	requestConnectResponse	=	3;
+	optional	RequestCloseResponse	requestCloseResponse	=	4;
+	optional	ReadData				readData				=	5;
+	optional	IOException				exception				=	6;
+	optional	Closed					closed					=	7;
+	optional	Auth					auth					=	8;
+	optional	bytes					data					=	9;
+}
+
+message Auth {
+	required	string		username	=	1;
+	required	string		md5			=	2;
+}
+
+message Closed {
+}
+
+message IOException {
+	required	string		message		=	1;
+}
+
+message ReadData {
+	required	bytes		data		=	1;
+}
+
+message WriteDataResponse {
+	optional	string		exception	=	1;
+}
+
+message RequestCloseResponse {
+}
+
+message RequestConnectResponse {
+	required	bytes		local		=	1;
+	required	uint32		port		=	2;
+}

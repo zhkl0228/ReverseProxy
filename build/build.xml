@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<project name="rp" basedir="." default="dist">
+
+	<property file="rp.properties" />
+
+	<target name="ReverseProxy">
+		<path id="path.lib">
+			<fileset dir="${ReverseProxy.root}/lib">
+				<include name="**/*.jar" />
+			</fileset>
+		</path>
+
+		<delete dir="${ReverseProxy.root}/bin/build" />
+		<mkdir dir="${ReverseProxy.root}/bin/build" />
+		<javac destdir="${ReverseProxy.root}/bin/build" target="1.7" includeantruntime="false"
+			debug="true">
+			<src path="${ReverseProxy.root}/src" />
+			<classpath refid="path.lib" />
+		</javac>
+
+		<copy todir="${ReverseProxy.root}/bin/build">
+			<fileset dir="${ReverseProxy.root}/src" excludes="**/*.java" />
+		</copy>
+
+		<delete dir="${pack.dir}" />
+		<pathconvert property="mf.classpath" pathsep=" ">
+			<path refid="path.lib" />
+			<flattenmapper />
+		</pathconvert>
+		<jar destfile="${root.dir}/lib/rp.jar">
+			<manifest>
+				<attribute name="Main-Class" value="cn.banny.rp.client.ReverseProxyProcrun" />
+				<attribute name="Class-Path" value="${mf.classpath}" />
+			</manifest>
+			<fileset dir="${ReverseProxy.root}/bin/build" />
+		</jar>
+
+		<copy todir="${root.dir}/lib" flatten="true">
+			<path refid="path.lib" />
+		</copy>
+
+		<!-- 数据目录 -->
+		<mkdir dir="${root.dir}/bin" />
+		<mkdir dir="${root.dir}/logs" />
+
+		<copy file="${ReverseProxy.root}/scripts/daemon.sh" todir="${root.dir}/bin" />
+		<copy overwrite="true" file="${ReverseProxy.root}/build/config.xml" todir="${root.dir}" />
+
+		<tar destfile="dist/dist.tar" basedir="${pack.dir}" />
+		<gzip destfile="dist/dist.tar.gz" src="dist/dist.tar" />
+		<delete file="dist/dist.tar" />
+	</target>
+
+	<target name="dist" depends="ReverseProxy">
+		<echo message="${root.dir}/lib/rp.jar" />
+		<echo message="Build successfully: ${basedir}/dist/dist.tar.gz" />
+	</target>
+
+</project>

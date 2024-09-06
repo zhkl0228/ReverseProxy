@@ -1,0 +1,5 @@
+# Project exclude paths
+/rp_api/target/
+/rp_client/target/
+/rp_daemon/target/
+/rp_server/target/
