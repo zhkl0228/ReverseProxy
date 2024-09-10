@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c499ed69-ef8e-4bb1-9e00-4724237dcf40" name="Changes" comment="Add Route.waitingConnectSocket">
+    <list default="true" id="c499ed69-ef8e-4bb1-9e00-4724237dcf40" name="Changes" comment="Update pom.xml">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rp_api/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,7 +123,7 @@
       <workItem from="1708274542187" duration="775000" />
       <workItem from="1720227987271" duration="61000" />
       <workItem from="1725636618291" duration="68000" />
-      <workItem from="1725636701482" duration="14362000" />
+      <workItem from="1725636701482" duration="15725000" />
     </task>
     <task id="LOCAL-00001" summary="Release 1.0.15">
       <option name="closed" value="true" />
@@ -181,7 +181,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725951882930</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Update pom.xml">
+      <option name="closed" value="true" />
+      <created>1725952916370</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1725952916370</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -196,6 +204,7 @@
     <MESSAGE value="Update ShutdownListener.java" />
     <MESSAGE value="Update source code." />
     <MESSAGE value="Add Route.waitingConnectSocket" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add Route.waitingConnectSocket" />
+    <MESSAGE value="Update pom.xml" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update pom.xml" />
   </component>
 </project>
