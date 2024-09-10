@@ -4,16 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c499ed69-ef8e-4bb1-9e00-4724237dcf40" name="Changes" comment="Update source code.">
-      <change afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/SocketWrap.java" afterDir="false" />
+    <list default="true" id="c499ed69-ef8e-4bb1-9e00-4724237dcf40" name="Changes" comment="Add Route.waitingConnectSocket">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/RequestConnect.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/RequestConnect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/Route.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/Route.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/socks/bio/SocksShutdownListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/socks/bio/SocksShutdownListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/AbstractReverseProxyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/AbstractReverseProxyClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/ReverseProxyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/ReverseProxyClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/AbstractRoute.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/AbstractRoute.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/test/java/cn/banny/rp/test/ReverseProxyServerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/test/java/cn/banny/rp/test/ReverseProxyServerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,7 +123,7 @@
       <workItem from="1708274542187" duration="775000" />
       <workItem from="1720227987271" duration="61000" />
       <workItem from="1725636618291" duration="68000" />
-      <workItem from="1725636701482" duration="13212000" />
+      <workItem from="1725636701482" duration="14362000" />
     </task>
     <task id="LOCAL-00001" summary="Release 1.0.15">
       <option name="closed" value="true" />
@@ -180,7 +173,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725638954318</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Add Route.waitingConnectSocket">
+      <option name="closed" value="true" />
+      <created>1725951882930</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1725951882930</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -194,6 +195,7 @@
     <MESSAGE value="Update StreamPipe.java" />
     <MESSAGE value="Update ShutdownListener.java" />
     <MESSAGE value="Update source code." />
-    <option name="LAST_COMMIT_MESSAGE" value="Update source code." />
+    <MESSAGE value="Add Route.waitingConnectSocket" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add Route.waitingConnectSocket" />
   </component>
 </project>
