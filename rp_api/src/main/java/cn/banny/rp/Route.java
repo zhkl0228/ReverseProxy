@@ -103,6 +103,8 @@ public interface Route extends MessageDeliver, RouteContext {
 
 	Socket createRemoteSocket();
 
+	Socket waitingConnectSocket();
+
 	String getLbs();
 
 }

@@ -289,6 +289,9 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			case 0x1a:
 				parseStartProxy(packet);
 				break;
+			case 0x1b:
+				parseForwardSocket(packet);
+				break;
 			default:
 				throw new IOException("messageReceived unsupported type: 0x" + Integer.toHexString(type));
 			}
@@ -461,16 +464,29 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			this.host = host;
 			this.port = port;
 		}
+		private int readTimeoutInMillis;
+		private int connectTimeoutInMillis;
 		@Override
 		public void run() {
 			Socket server = null;
 			Socket client = null;
 			try {
 				server = new Socket();
-				server.connect(new InetSocketAddress(serverHost, listenPort));
+				if (connectTimeoutInMillis > 0) {
+					server.connect(new InetSocketAddress(serverHost, listenPort), connectTimeoutInMillis);
+				} else {
+					server.connect(new InetSocketAddress(serverHost, listenPort));
+				}
 
 				client = new Socket();
-				client.connect(new InetSocketAddress(host, port));
+				if (readTimeoutInMillis > 0) {
+					client.setSoTimeout(readTimeoutInMillis);
+				}
+				if (connectTimeoutInMillis > 0) {
+					client.connect(new InetSocketAddress(host, port), connectTimeoutInMillis);
+				} else {
+					client.connect(new InetSocketAddress(host, port));
+				}
 
 				ShutdownListener listener = new SocksShutdownListener(null);
 				new Thread(new StreamPipe(server, server.getInputStream(), client, client.getOutputStream(), listener)).start();
@@ -482,6 +498,19 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 				ReverseProxy.closeQuietly(client);
 			}
 		}
+	}
+
+	private void parseForwardSocket(ByteBuffer in) {
+		int listenPort = in.getShort() & 0xffff;
+		String host = ReverseProxy.readUTF(in);
+		int port = in.getShort() & 0xffff;
+		int readTimeoutInMillis = in.getInt();
+		int connectTimeoutInMillis = in.getInt();
+
+		ProxyStarter proxyStarter = new ProxyStarter(this.host, listenPort, host, port);
+		proxyStarter.readTimeoutInMillis = readTimeoutInMillis;
+		proxyStarter.connectTimeoutInMillis = connectTimeoutInMillis;
+		new Thread(proxyStarter).start();
 	}
 
 	private void parseStartProxy(ByteBuffer in) throws IOException {
@@ -531,6 +560,11 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 	}
 
 	private final Map<Integer, SocketProxy> socketMap = new ConcurrentHashMap<>();
+
+	@Override
+	public int getSocksCount() {
+		return socketMap.size();
+	}
 
 	protected final void closeAllSocketProxies() {
 		portForwardMap.clear();

@@ -4,41 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c499ed69-ef8e-4bb1-9e00-4724237dcf40" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="c499ed69-ef8e-4bb1-9e00-4724237dcf40" name="Changes" comment="Update source code.">
+      <change afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/SocketWrap.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_api/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/AbstractRouteContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/AbstractRouteContext.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/RequestConnect.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/RequestConnect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/ReverseProxy.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/ReverseProxy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/io/MappedByteBufferPool.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/io/MappedByteBufferPool.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/socks/bio/BIOSocksServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/socks/bio/BIOSocksServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_client/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/rp_client/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/Route.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/Route.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/socks/bio/SocksShutdownListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_api/src/main/java/cn/banny/rp/socks/bio/SocksShutdownListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/AbstractReverseProxyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/AbstractReverseProxyClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/PortForwardRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/PortForwardRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/nio/NIOReverseProxyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/nio/NIOReverseProxyClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/nio/NIOSocketProxy.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/nio/NIOSocketProxy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/nio/SSLReverseProxyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/nio/SSLReverseProxyClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_daemon/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/rp_daemon/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_daemon/src/main/java/cn/banny/rp/client/ReverseProxyDaemon.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_daemon/src/main/java/cn/banny/rp/client/ReverseProxyDaemon.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_daemon/src/main/java/cn/banny/rp/client/ReverseProxyProcrun.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_daemon/src/main/java/cn/banny/rp/client/ReverseProxyProcrun.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_daemon/src/main/java/cn/banny/rp/client/config/StreamExtractHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_daemon/src/main/java/cn/banny/rp/client/config/StreamExtractHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/ReverseProxyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_client/src/main/java/cn/banny/rp/client/ReverseProxyClient.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/AbstractRoute.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/AbstractRoute.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/AbstractServerHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/AbstractServerHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/ProxyPipedInputStream.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/ProxyPipedInputStream.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/RemoteSocket.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/RemoteSocket.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/forward/AIORouteForwarder.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/forward/AIORouteForwarder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/forward/BIORouteForwarder.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/forward/BIORouteForwarder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/forward/NIOPortForwarder.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/forward/NIOPortForwarder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/forward/NIORouteForwarder.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/forward/NIORouteForwarder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/mina/MinaServerHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/mina/MinaServerHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/socks/AbstractProxyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/socks/AbstractProxyServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/socks/AbstractSocksHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/socks/AbstractSocksHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/socks/NIOProxyServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/main/java/cn/banny/rp/server/socks/NIOProxyServer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rp_server/src/test/java/cn/banny/rp/test/ReverseProxyServerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/rp_server/src/test/java/cn/banny/rp/test/ReverseProxyServerTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -80,7 +54,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.ReverseProxyServerTest.executor": "Run",
+    "Application.ReverseProxyServerTest.executor": "Debug",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
@@ -156,7 +130,7 @@
       <workItem from="1708274542187" duration="775000" />
       <workItem from="1720227987271" duration="61000" />
       <workItem from="1725636618291" duration="68000" />
-      <workItem from="1725636701482" duration="2230000" />
+      <workItem from="1725636701482" duration="13212000" />
     </task>
     <task id="LOCAL-00001" summary="Release 1.0.15">
       <option name="closed" value="true" />
@@ -198,7 +172,15 @@
       <option name="project" value="LOCAL" />
       <updated>1708021588038</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Update source code.">
+      <option name="closed" value="true" />
+      <created>1725638954318</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1725638954318</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -211,6 +193,7 @@
     <MESSAGE value="Update SocksHandler.java" />
     <MESSAGE value="Update StreamPipe.java" />
     <MESSAGE value="Update ShutdownListener.java" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update ShutdownListener.java" />
+    <MESSAGE value="Update source code." />
+    <option name="LAST_COMMIT_MESSAGE" value="Update source code." />
   </component>
 </project>

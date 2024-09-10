@@ -54,6 +54,11 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	}
 
 	@Override
+	public Socket waitingConnectSocket() {
+		return new SocketWrap(this);
+	}
+
+	@Override
 	public long getStartTime() {
 		return startTime;
 	}

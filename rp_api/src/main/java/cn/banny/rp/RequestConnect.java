@@ -47,7 +47,9 @@ public class RequestConnect {
 	private InetAddress address;
 	
 	public static RequestConnect parseRequestConnect(ByteBuffer in) throws IOException {
-		RequestConnect connect = new RequestConnect(ReverseProxy.readUTF(in), in.getShort() & 0xFFFF, in.getInt(), in.get() == 1, in.get() == 1, in.getInt(), in.get() == 1, in.getInt(), in.get() == 1, in.get() & 0xFF);
+		String host = ReverseProxy.readUTF(in);
+		int port = in.getShort() & 0xffff;
+		RequestConnect connect = new RequestConnect(host, port, in.getInt(), in.get() == 1, in.get() == 1, in.getInt(), in.get() == 1, in.getInt(), in.get() == 1, in.get() & 0xFF);
 		int size;
 		if(in.hasRemaining() &&
 				(size = (in.get() & 0xFF)) > 0) {

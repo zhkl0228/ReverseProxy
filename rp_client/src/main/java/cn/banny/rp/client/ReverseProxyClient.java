@@ -13,6 +13,8 @@ public interface ReverseProxyClient extends MessageDeliver {
 	
 	int READ_BUFFER_SIZE = 1024 * 64;//64K cache
 
+	int getSocksCount();
+
 	void setRequestChangeIp(IpChangeProcessor ipChangeProcessor);
 
 	void login(String username, String password);

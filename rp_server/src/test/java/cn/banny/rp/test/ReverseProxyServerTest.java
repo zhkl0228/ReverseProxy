@@ -9,9 +9,9 @@ import cn.banny.rp.server.mina.MinaReverseProxyServer;
 import cn.banny.rp.server.mina.MinaServerHandler;
 import cn.banny.rp.server.socks.NIOProxyServer;
 import cn.banny.rp.server.socks.ProxyServer;
-import com.alibaba.fastjson.JSON;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -41,6 +41,7 @@ import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -74,15 +75,6 @@ public class ReverseProxyServerTest {
 		ProxyServer proxyServer = new NIOProxyServer(2017);
 		proxyServer.setHandler(handler);
 		proxyServer.setSupportV4(true);
-		/*proxyServer.setAuthHandler(new AuthHandler() {
-			@Override
-			public void onAuth(String username) {
-			}
-			@Override
-			public AuthResult auth(String username, String password) {
-				return null;
-			}
-		});*/
 		try {
 			server.initialize();
 			proxyServer.initialize();
@@ -90,8 +82,9 @@ public class ReverseProxyServerTest {
 			Scanner scanner = new Scanner(System.in);
 			String line;
 			while((line = scanner.nextLine()) != null) {
-				if("exit".equalsIgnoreCase(line) ||
-						"quit".equalsIgnoreCase(line)) {
+				if ("exit".equalsIgnoreCase(line) ||
+						"quit".equalsIgnoreCase(line) ||
+						"q".equals(line)) {
 					break;
 				}
 
@@ -107,22 +100,22 @@ public class ReverseProxyServerTest {
 					doTest(handler, route);
 				}
 				if("https".equalsIgnoreCase(line)) {
-					ReverseProxyServerTest.doHttps(handler, route, "https://www.gzmtx.cn/ip.php");
+					ReverseProxyServerTest.doHttps(handler, route);
 				}
 				if("http".equalsIgnoreCase(line)) {
-					ReverseProxyServerTest.doProxyHttp(new HttpHost("mm.gzmtx.cn", 8089), "http://1212.ip138.com/ic.asp", "GBK");
+					ReverseProxyServerTest.doProxyHttp(new HttpHost("mm.gzmtx.cn", 8089));
 				}
 				if("proxy".equalsIgnoreCase(line)) {
 					Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress("localhost", 2017));
-					ReverseProxyServerTest.doProxyHttp(handler, proxy, "https://www.gzmtx.cn/ip.php", "UTF-8");
+					ReverseProxyServerTest.doProxyHttp(handler, proxy, "https://www.gzmtx.cn/ip.php");
 				}
 				if("taobao".equalsIgnoreCase(line)) {
 					Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress("localhost", 2017));
-					ReverseProxyServerTest.doProxyHttp(handler, proxy, "https://www.taobao.com/help/getip.php", "UTF-8");
+					ReverseProxyServerTest.doProxyHttp(handler, proxy, "https://www.taobao.com/help/getip.php");
 				}
 				if("pip".equalsIgnoreCase(line)) {
 					Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress("mm.gzmtx.cn", 8889));
-					ReverseProxyServerTest.doProxyHttp(handler, proxy, "http://www.whatismyip.com.tw", "UTF-8");
+					ReverseProxyServerTest.doProxyHttp(handler, proxy, "http://www.whatismyip.com.tw");
 				}
 				if("change".equalsIgnoreCase(line)) {
 					proxyClient = null;
@@ -135,10 +128,10 @@ public class ReverseProxyServerTest {
 					System.out.println("requested change ip");
 				}
 				if("baidu".equalsIgnoreCase(line)) {
-					ReverseProxyServerTest.doHttp(handler, route, "http://www.baidu.com", "UTF-8");
+					ReverseProxyServerTest.doHttp(handler, route, "https://www.baidu.com");
 				}
 				if("ip138".equalsIgnoreCase(line)) {
-					ReverseProxyServerTest.doHttp(handler, route, "http://2020.ip138.com/", "UTF-8");
+					ReverseProxyServerTest.doHttp(handler, route, "https://2024.ip138.com/");
 				}
 				if("bind".equalsIgnoreCase(line) &&
 						route != null) {
@@ -196,14 +189,14 @@ public class ReverseProxyServerTest {
 		return address.getAddress().equals(remote.getAddress());
 	}
 
-	private static void doTest(ServerHandler handler, Route route) {
+	private static void doTest(ServerHandler ignoredHandler, Route route) {
 		try {
 			Socket socket = route.createRemoteSocket();
 			socket.setSoTimeout(1000);
 			socket.connect(new InetSocketAddress("www.baidu.com", 80), 1000);
 			socket.close();
 		} catch(Throwable t) {
-			t.printStackTrace();
+			t.printStackTrace(System.err);
 		}
 	}
 	
@@ -218,10 +211,10 @@ public class ReverseProxyServerTest {
 		SSLContext ctx = SSLContext.getInstance("SSL");
 		X509TrustManager tm = new X509TrustManager() {
 			public void checkClientTrusted(X509Certificate[] xcs,
-					String string) throws CertificateException {
+					String string) {
 			}
 			public void checkServerTrusted(X509Certificate[] xcs,
-					String string) throws CertificateException {
+					String string) {
 			}
 			public X509Certificate[] getAcceptedIssuers() {
 				return null;
@@ -232,7 +225,7 @@ public class ReverseProxyServerTest {
 		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create().register("http", new ConnectionSocketFactory() {
 			@Override
 			public Socket createSocket(HttpContext context) {
-				return route.createRemoteSocket();
+				return route.waitingConnectSocket();
 			}
 			@Override
 			public Socket connectSocket(int connectTimeout, Socket socket, HttpHost host,
@@ -246,13 +239,7 @@ public class ReverseProxyServerTest {
 		}).register("https", new SSLConnectionSocketFactory(ctx) {
 			@Override
 			public Socket createSocket(HttpContext context) {
-				return route.createRemoteSocket();
-			}
-			@Override
-			public Socket connectSocket(int connectTimeout, Socket socket, HttpHost host,
-					InetSocketAddress remoteAddress, InetSocketAddress localAddress, HttpContext context)
-					throws IOException {
-				return super.connectSocket(connectTimeout, socket, host, remoteAddress, localAddress, context);
+				return route.waitingConnectSocket();
 			}
 		}).build();
 		PoolingHttpClientConnectionManager manager = new PoolingHttpClientConnectionManager(registry);
@@ -349,74 +336,9 @@ public class ReverseProxyServerTest {
 		return proxyClient;
 	}
 
-	private static void doProxyHttp(final HttpHost proxy, String url, String encoding) {
+	private static void doProxyHttp(final HttpHost proxy) {
 		HttpClient client = createProxyHttpClient(proxy);
-		HttpGet get = new HttpGet(url);
-		InputStream inputStream = null;
-		try {
-			long start = System.currentTimeMillis();
-			org.apache.http.HttpResponse response = client.execute(get);
-			HttpEntity entity = response.getEntity();
-			inputStream = entity.getContent();
-			System.out.println(IOUtils.toString(inputStream, encoding));
-			System.out.println("offset=" + (System.currentTimeMillis() - start));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			IOUtils.closeQuietly(inputStream);
-			get.releaseConnection();
-		}
-	}
-
-	private static void doProxyHttp(final ServerHandler handler, final Proxy proxy, String url, String encoding) throws NoSuchAlgorithmException, KeyManagementException {
-		HttpClient client = createProxyHttpClient(handler, proxy);
-		HttpGet get = new HttpGet(url);
-		InputStream inputStream = null;
-		try {
-			long start = System.currentTimeMillis();
-			org.apache.http.HttpResponse response = client.execute(get);
-			HttpEntity entity = response.getEntity();
-			inputStream = entity.getContent();
-			boolean isJson = "json".equals(encoding);
-			String str = IOUtils.toString(inputStream, isJson ? "UTF-8" : encoding);
-			if(isJson) {
-				System.out.println(JSON.parse(str));
-			} else {
-				System.out.println(str);
-			}
-			System.out.println("offset=" + (System.currentTimeMillis() - start));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			IOUtils.closeQuietly(inputStream);
-			get.releaseConnection();
-		}
-	}
-
-	private static void doHttp(final ServerHandler handler, final Route route, String url, String encoding) throws KeyManagementException, NoSuchAlgorithmException {
-		HttpClient client = createHttpClient(handler, route);
-		HttpGet get = new HttpGet(url);
-		InputStream inputStream = null;
-		try {
-			long start = System.currentTimeMillis();
-			org.apache.http.HttpResponse response = client.execute(get);
-			HttpEntity entity = response.getEntity();
-			if(entity != null) {
-				inputStream = entity.getContent();
-				System.out.println(IOUtils.toString(inputStream, encoding));
-			}
-			System.out.println("offset=" + (System.currentTimeMillis() - start) + ", lbs=" + route.getLbs());
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			IOUtils.closeQuietly(inputStream);
-			get.releaseConnection();
-		}
-	}
-
-	private static void doHttps(final ServerHandler handler, final Route route, String url) throws KeyManagementException, NoSuchAlgorithmException {
-		HttpClient client = createHttpClient(handler, route);
-		HttpGet get = new HttpGet(url);
+		HttpGet get = new HttpGet("http://1212.ip138.com/ic.asp");
 		InputStream inputStream = null;
 		try {
 			long start = System.currentTimeMillis();
@@ -426,7 +348,68 @@ public class ReverseProxyServerTest {
 			System.out.println(IOUtils.toString(inputStream, "GBK"));
 			System.out.println("offset=" + (System.currentTimeMillis() - start));
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace(System.err);
+		} finally {
+			IOUtils.closeQuietly(inputStream);
+			get.releaseConnection();
+		}
+	}
+
+	private static void doProxyHttp(final ServerHandler handler, final Proxy proxy, String url) throws NoSuchAlgorithmException, KeyManagementException {
+		HttpClient client = createProxyHttpClient(handler, proxy);
+		HttpGet get = new HttpGet(url);
+		InputStream inputStream = null;
+		try {
+			long start = System.currentTimeMillis();
+			org.apache.http.HttpResponse response = client.execute(get);
+			HttpEntity entity = response.getEntity();
+			inputStream = entity.getContent();
+			String str = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            System.out.println(str);
+            System.out.println("offset=" + (System.currentTimeMillis() - start));
+		} catch (IOException e) {
+			e.printStackTrace(System.err);
+		} finally {
+			IOUtils.closeQuietly(inputStream);
+			get.releaseConnection();
+		}
+	}
+
+	private static void doHttp(final ServerHandler handler, final Route route, String url) throws KeyManagementException, NoSuchAlgorithmException {
+		HttpClient client = createHttpClient(handler, route);
+		HttpGet get = new HttpGet(url);
+		get.setHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36");
+		InputStream inputStream = null;
+		try {
+			long start = System.currentTimeMillis();
+			org.apache.http.HttpResponse response = client.execute(get);
+			HttpEntity entity = response.getEntity();
+			if(entity != null) {
+				inputStream = entity.getContent();
+				System.out.println(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+			}
+			System.out.println("offset=" + (System.currentTimeMillis() - start) + ", lbs=" + route.getLbs());
+		} catch (IOException e) {
+			e.printStackTrace(System.err);
+		} finally {
+			IOUtils.closeQuietly(inputStream);
+			get.releaseConnection();
+		}
+	}
+
+	private static void doHttps(final ServerHandler handler, final Route route) throws KeyManagementException, NoSuchAlgorithmException {
+		HttpClient client = createHttpClient(handler, route);
+		HttpGet get = new HttpGet("https://www.gzmtx.cn/ip.php");
+		InputStream inputStream = null;
+		try {
+			long start = System.currentTimeMillis();
+			org.apache.http.HttpResponse response = client.execute(get);
+			HttpEntity entity = response.getEntity();
+			inputStream = entity.getContent();
+			System.out.println(IOUtils.toString(inputStream, "GBK"));
+			System.out.println("offset=" + (System.currentTimeMillis() - start));
+		} catch (IOException e) {
+			e.printStackTrace(System.err);
 		} finally {
 			IOUtils.closeQuietly(inputStream);
 			get.releaseConnection();

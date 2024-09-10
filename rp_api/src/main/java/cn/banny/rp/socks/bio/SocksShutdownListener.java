@@ -30,7 +30,7 @@ public class SocksShutdownListener implements ShutdownListener {
     @Override
     public synchronized void onShutdownInput(Socket socket) {
         if (socket == out) {
-            log.debug("close socket: {}", socket);
+            log.debug("onShutdownInput close socket: {}", socket);
             IOUtils.close(socket);
         } else {
             in = socket;
@@ -40,7 +40,7 @@ public class SocksShutdownListener implements ShutdownListener {
     @Override
     public synchronized void onShutdownOutput(Socket socket) {
         if (socket == in) {
-            log.debug("close socket: {}", socket);
+            log.debug("onShutdownOutput close socket: {}", socket);
             IOUtils.close(socket);
         } else {
             out = socket;
