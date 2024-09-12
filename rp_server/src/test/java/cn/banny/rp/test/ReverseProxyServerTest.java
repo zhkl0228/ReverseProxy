@@ -7,8 +7,8 @@ import cn.banny.rp.server.AbstractServerHandler;
 import cn.banny.rp.server.ServerHandler;
 import cn.banny.rp.server.mina.MinaReverseProxyServer;
 import cn.banny.rp.server.mina.MinaServerHandler;
+import cn.banny.rp.server.socks.AbstractProxyServer;
 import cn.banny.rp.server.socks.NIOProxyServer;
-import cn.banny.rp.server.socks.ProxyServer;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -44,7 +44,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -71,8 +70,8 @@ public class ReverseProxyServerTest {
 				return new PasswordAuthentication("zhkl0228", "123456".toCharArray());
 			}
 		});
-		
-		ProxyServer proxyServer = new NIOProxyServer(2017);
+
+		AbstractProxyServer<?> proxyServer = new NIOProxyServer(2017);
 		proxyServer.setHandler(handler);
 		proxyServer.setSupportV4(true);
 		try {
@@ -93,7 +92,7 @@ public class ReverseProxyServerTest {
 					long start = System.currentTimeMillis();
 					Attribute attribute = route.getRemoteAddressContext().createAttribute("remoteAddressContext");
 					attribute.add();
-					System.err.println(attribute + ", offset=" + (System.currentTimeMillis() - start));
+                    System.err.printf("%s, offset=%d, lbs=%s%n", attribute, System.currentTimeMillis() - start, route.getLbs());
 				}
 				
 				if("test".equalsIgnoreCase(line)) {
@@ -107,15 +106,15 @@ public class ReverseProxyServerTest {
 				}
 				if("proxy".equalsIgnoreCase(line)) {
 					Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress("localhost", 2017));
-					ReverseProxyServerTest.doProxyHttp(handler, proxy, "https://www.gzmtx.cn/ip.php");
+					ReverseProxyServerTest.doProxyHttp(proxy, "https://www.gzmtx.cn/ip.php");
 				}
 				if("taobao".equalsIgnoreCase(line)) {
 					Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress("localhost", 2017));
-					ReverseProxyServerTest.doProxyHttp(handler, proxy, "https://www.taobao.com/help/getip.php");
+					ReverseProxyServerTest.doProxyHttp(proxy, "https://www.taobao.com/help/getip.php");
 				}
 				if("pip".equalsIgnoreCase(line)) {
 					Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress("mm.gzmtx.cn", 8889));
-					ReverseProxyServerTest.doProxyHttp(handler, proxy, "http://www.whatismyip.com.tw");
+					ReverseProxyServerTest.doProxyHttp(proxy, "http://www.whatismyip.com.tw");
 				}
 				if("change".equalsIgnoreCase(line)) {
 					proxyClient = null;
@@ -278,7 +277,7 @@ public class ReverseProxyServerTest {
 	private static HttpClient proxyClient;
 	private static PoolingHttpClientConnectionManager manager;
 	
-	private static HttpClient createProxyHttpClient(final ServerHandler handler, final Proxy proxy) throws NoSuchAlgorithmException, KeyManagementException {
+	private static HttpClient createProxyHttpClient(final Proxy proxy) throws NoSuchAlgorithmException, KeyManagementException {
 		if(proxyClient != null) {
 			return proxyClient;
 		}
@@ -301,10 +300,10 @@ public class ReverseProxyServerTest {
 		SSLContext ctx = SSLContext.getInstance("SSL");
 		X509TrustManager tm = new X509TrustManager() {
 			public void checkClientTrusted(X509Certificate[] xcs,
-					String string) throws CertificateException {
+					String string) {
 			}
 			public void checkServerTrusted(X509Certificate[] xcs,
-					String string) throws CertificateException {
+					String string) {
 			}
 			public X509Certificate[] getAcceptedIssuers() {
 				return null;
@@ -355,8 +354,8 @@ public class ReverseProxyServerTest {
 		}
 	}
 
-	private static void doProxyHttp(final ServerHandler handler, final Proxy proxy, String url) throws NoSuchAlgorithmException, KeyManagementException {
-		HttpClient client = createProxyHttpClient(handler, proxy);
+	private static void doProxyHttp(final Proxy proxy, String url) throws NoSuchAlgorithmException, KeyManagementException {
+		HttpClient client = createProxyHttpClient(proxy);
 		HttpGet get = new HttpGet(url);
 		InputStream inputStream = null;
 		try {

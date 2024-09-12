@@ -23,6 +23,8 @@ public interface ReverseProxyClient extends MessageDeliver {
 
 	void logout();
 
+	void disconnect();
+
 	boolean isConnected();
 
 	boolean isAuthOK();

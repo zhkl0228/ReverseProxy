@@ -313,6 +313,11 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		closeSession();
 	}
 
+	@Override
+	public void disconnect() {
+		closeSession();
+	}
+
 	protected final void processPacket(SocketChannel session) {
 		try {
 			packetBuffer.flip();
