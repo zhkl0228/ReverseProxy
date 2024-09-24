@@ -58,6 +58,9 @@ class SocketWrap extends Socket {
             serverSocket.bind(new InetSocketAddress(0));
             route.sendRequest(createForwardSocket(serverSocket.getLocalPort(), socketAddress, connectTimeoutInMillis));
             wrapped = serverSocket.accept();
+            if (readTimeoutInMillis > 0) {
+                wrapped.setSoTimeout(readTimeoutInMillis);
+            }
         }
     }
 
