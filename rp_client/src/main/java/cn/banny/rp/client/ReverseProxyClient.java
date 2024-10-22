@@ -61,6 +61,12 @@ public interface ReverseProxyClient extends MessageDeliver {
 	 */
 	int getNetworkDelay();
 
+	/**
+	 * 网络平均延时，单位毫秒
+	 * @return 0表示没有初始化网络延时
+	 */
+	int getAverageNetworkDelay();
+
 	void setAuthListener(AuthListener authListener);
 
 	AuthResult getAuthResult();

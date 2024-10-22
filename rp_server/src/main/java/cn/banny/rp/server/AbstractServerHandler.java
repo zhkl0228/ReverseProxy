@@ -295,6 +295,7 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 			}
 			dos.writeBoolean(reconnect);
 			dos.writeLong(requestTime);
+			dos.writeUTF(route.getRemoteAddress().getHostString());
 			
 			route.sendRequest(baos.toByteArray());
 		} finally {

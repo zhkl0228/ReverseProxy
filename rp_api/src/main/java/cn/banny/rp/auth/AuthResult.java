@@ -35,7 +35,17 @@ public class AuthResult {
 		String nick = in.get() == 1 ? ReverseProxy.readUTF(in) : null;
 		return new AuthResult(status, msg, expire, nick);
 	}
-	
+
+	private String clientIp;
+
+	public String getClientIp() {
+		return clientIp;
+	}
+
+	public void setClientIp(String clientIp) {
+		this.clientIp = clientIp;
+	}
+
 	private AuthResult(int status, String msg, Long expire, String nick) {
 		super();
 		this.status = status;
@@ -60,4 +70,14 @@ public class AuthResult {
 		return nick;
 	}
 
+	@Override
+	public String toString() {
+		return "AuthResult{" +
+				"status=" + status +
+				", msg='" + msg + '\'' +
+				", expire=" + expire +
+				", nick='" + nick + '\'' +
+				", clientIp='" + clientIp + '\'' +
+				'}';
+	}
 }

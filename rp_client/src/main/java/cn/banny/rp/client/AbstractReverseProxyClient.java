@@ -129,8 +129,18 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 	public final boolean isAuthOK() {
 		return username != null && password != null && authResult != null && authResult.getStatus() == 0;
 	}
-	
+
 	private int networkDelay;
+	private int averageNetworkDelay;
+
+	private void addNetworkDelay(long networkDelay) {
+		this.networkDelay = (int) networkDelay;
+		if (this.averageNetworkDelay > 0) {
+			this.averageNetworkDelay = (this.averageNetworkDelay + this.networkDelay) / 2;
+		} else {
+			this.averageNetworkDelay = this.networkDelay;
+		}
+	}
 	
 	/* (non-Javadoc)
 	 * @see cn.banny.rp.client.IReverseProxyClient#getNetworkDelay()
@@ -138,6 +148,11 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 	@Override
 	public final int getNetworkDelay() {
 		return networkDelay;
+	}
+
+	@Override
+	public int getAverageNetworkDelay() {
+		return averageNetworkDelay;
 	}
 
 	/* (non-Javadoc)
@@ -254,7 +269,11 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 				}
 				if(packet.remaining() >= 8) {
 					lastSync = currentTimeMillis;
-					this.networkDelay = (int) (lastSync - packet.getLong());
+					addNetworkDelay(lastSync - packet.getLong());
+				}
+				if (packet.remaining() >= 2) {
+					String clientIp = ReverseProxy.readUTF(packet);
+					authResult.setClientIp(clientIp);
 				}
 				if(authListener != null &&
 						authListener.onAuthResponse(this, authResult)) {
@@ -265,7 +284,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			case 0x8:
 				lastAliveTime = currentTimeMillis;
 				lastSync = currentTimeMillis;
-				this.networkDelay = (int) (lastSync - packet.getLong());
+				addNetworkDelay(lastSync - packet.getLong());
 				break;
 			case 0x9:
 				if(dataHandler != null) {
@@ -364,7 +383,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			writeBuffer.mark();
 			writeBuffer.position(writeBuffer.position() + 4);
 			writeBuffer.put((byte) 0x8);
-			writeBuffer.putInt(networkDelay);
+			writeBuffer.putInt(averageNetworkDelay);
 			writeBuffer.putLong(currentTimeMillis);
 			writeBuffer.putInt(0);
 

@@ -94,7 +94,11 @@ public class ReverseProxyServerTest {
 					attribute.add();
                     System.err.printf("%s, offset=%d, lbs=%s%n", attribute, System.currentTimeMillis() - start, route.getLbs());
 				}
-				
+
+				if ("changeIp".equalsIgnoreCase(line) && route != null && route.canChangeIp()) {
+					route.requestChangeIp();
+					continue;
+				}
 				if("test".equalsIgnoreCase(line)) {
 					doTest(handler, route);
 				}
