@@ -6,6 +6,7 @@ import cn.banny.rp.auth.Auth;
 import cn.banny.rp.auth.AuthHandler;
 import cn.banny.rp.auth.AuthResult;
 import cn.banny.rp.handler.ExtDataHandler;
+import cn.banny.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,7 +181,10 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 			route.lbs = ReverseProxy.readUTF(in);
 
 			if (routeNetworkChangedListener != null) {
-				routeNetworkChangedListener.notifyLbsUpdate(route, route.lbs);
+				String remoteIp = routeNetworkChangedListener.notifyLbsUpdate(route, route.lbs);
+				if (StringUtils.hasText(remoteIp)) {
+					route.setRemoteIp(remoteIp);
+				}
 			}
 		}
 		

@@ -96,7 +96,8 @@ public class ReverseProxyServerTest {
 				}
 
 				if ("changeIp".equalsIgnoreCase(line) && route != null && route.canChangeIp()) {
-					route.requestChangeIp();
+					boolean ret = route.requestChangeIp();
+					System.out.println("changeIp: " + ret);
 					continue;
 				}
 				if("test".equalsIgnoreCase(line)) {

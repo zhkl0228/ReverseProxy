@@ -4,8 +4,6 @@ import cn.banny.rp.AbstractRouteContext;
 import cn.banny.rp.RouteContext;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -15,14 +13,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class RemoteAddressContext extends AbstractRouteContext implements RouteContext {
 	
-	private static final Map<InetAddress, RouteContext> contextMap = new PassiveExpiringMap<>(TimeUnit.HOURS.toMillis(24));
+	private static final Map<String, RouteContext> contextMap = new PassiveExpiringMap<>(TimeUnit.HOURS.toMillis(24));
 	
-	public static RouteContext obtain(InetSocketAddress address) {
-		RouteContext context = contextMap.get(address.getAddress());
+	public static RouteContext obtain(String ip) {
+		RouteContext context = contextMap.get(ip);
 		if(context == null) {
 			context = new RemoteAddressContext();
 		}
-		contextMap.put(address.getAddress(), context); // 确保旧的不会24小时过期
+		contextMap.put(ip, context); // 确保旧的不会24小时过期
 		return context;
 	}
 

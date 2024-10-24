@@ -16,6 +16,6 @@ public interface RouteNetworkChangedListener {
 	 */
 	boolean notifyNetworkChanged(Route route, int hash);
 
-	void notifyLbsUpdate(Route route, String lbs);
+	String notifyLbsUpdate(Route route, String lbs);
 
 }

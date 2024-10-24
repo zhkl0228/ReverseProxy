@@ -311,7 +311,7 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	void setLastReceivedTime(long lastReceivedTime) {
 		this.lastReceivedTime = lastReceivedTime;
 		
-		RemoteAddressContext.obtain(getRemoteAddress()); // keep remote address context alive
+		RemoteAddressContext.obtain(getRemoteAddress().getHostString()); // keep remote address context alive
 	}
 
 	@Override
@@ -425,6 +425,12 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	@Override
 	public Socket createRemoteSocket() {
 		return new RemoteSocket(this);
+	}
+
+	protected String remoteIp;
+
+	public void setRemoteIp(String remoteIp) {
+		this.remoteIp = remoteIp;
 	}
 
 }
