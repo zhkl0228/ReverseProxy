@@ -178,13 +178,16 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 		}
 
 		if (in.remaining() > 0 && in.get() == 1) { // sync lbs
-			route.lbs = ReverseProxy.readUTF(in);
-
-			if (routeNetworkChangedListener != null) {
-				String remoteIp = routeNetworkChangedListener.notifyLbsUpdate(route, route.lbs);
-				if (StringUtils.hasText(remoteIp)) {
-					route.setRemoteIp(remoteIp);
+			String lbs = ReverseProxy.readUTF(in);
+			try {
+				if (routeNetworkChangedListener != null) {
+					String remoteIp = routeNetworkChangedListener.notifyLbsUpdate(route, lbs);
+					if (StringUtils.hasText(remoteIp)) {
+						route.setRemoteIp(remoteIp);
+					}
 				}
+			} finally {
+				route.lbs = lbs;
 			}
 		}
 		
