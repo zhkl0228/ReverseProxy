@@ -10,6 +10,7 @@
 
 #include <pthread.h>
 #include <sys/select.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 #define RP_VERSION 0x50010
@@ -38,8 +39,8 @@ typedef struct {
 enum login_status { offline, request_login, logged };
 
 typedef struct {
-	void (*on_ready)(void *arg, long long timeMillis);
-	void (*on_data)(void *arg, long long timeMillis);
+	void (*on_ready)(void *arg, uint64_t timeMillis);
+	void (*on_data)(void *arg, uint64_t timeMillis);
 	void (*on_ready_error)(void *arg, char *exception);
 	void (*on_data_error)(void *arg, char *exception);
 } select_callback;
@@ -57,8 +58,8 @@ typedef struct socket_proxy {
 	bool request_close;
 	bool connect_timeout;
 
-	long long connect_time;
-	long long last_touch;
+    uint64_t connect_time;
+    uint64_t last_touch;
 	struct socket_proxy **prev;
 	struct socket_proxy *next;
 
@@ -70,6 +71,7 @@ typedef struct socket_proxy {
 } socket_proxy;
 
 typedef void (*on_change_ip)(void *);
+typedef void (*alive_checker)(void *, uint64_t currentTimeInMillis);
 
 typedef struct {
 	pthread_t thread;
@@ -82,8 +84,9 @@ typedef struct {
 
 	int fd;
 
-	long long last_check_session;
-	int network_delay;
+    uint64_t last_check_session;
+	uint32_t network_delay;
+    uint32_t average_network_delay;
 
 	socket_proxy *sockets;
 
@@ -94,11 +97,13 @@ typedef struct {
 	bool can_stop;
 	bool connected;
 	bool reconnect;
-	long long connect_time;
-	long long last_touch;
+    uint64_t init_time;
+    uint64_t connect_time;
+    uint64_t last_touch;
 
 	select_callback callback;
     on_change_ip change_ip_callback;
+    alive_checker alive_check_callback;
 } rp;
 
 bool rp_running(rp *rp);

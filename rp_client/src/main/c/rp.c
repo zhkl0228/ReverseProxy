@@ -121,10 +121,10 @@ static long long read_long(char *data, size_t index) {
 	return (b1 << 56) | (b2 << 48) | (b3 << 40) | (b4 << 32) | (b5 << 24) | (b6 << 16) | (b7 << 8) | b8;
 }
 
-static long long currentTimeMillis(void) {
+static uint64_t currentTimeMillis(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	long long t = tv.tv_sec;
+    uint64_t t = tv.tv_sec;
 	t *= 1000;
 	t += tv.tv_usec / 1000;
 	return  t;
@@ -371,7 +371,7 @@ static void proxy_on_data_error(void *arg, char *exception) {
 	send_response(buf, index, &rp->buffer);
 }
 
-static void proxy_on_ready(void *arg, long long timeMillis) {
+static void proxy_on_ready(void *arg, uint64_t timeMillis) {
 	socket_proxy *proxy = arg;
 	rp *rp = proxy->rp;
 
@@ -403,7 +403,7 @@ static void proxy_on_ready(void *arg, long long timeMillis) {
 	sock_write_buffer(proxy->fd, &proxy->buffer);
 }
 
-static void proxy_on_data(void *arg, long long timeMillis) {
+static void proxy_on_data(void *arg, uint64_t timeMillis) {
 	socket_proxy *proxy = arg;
 	rp *rp = proxy->rp;
 
@@ -438,15 +438,25 @@ static void proxy_on_data(void *arg, long long timeMillis) {
 	}
 }
 
+static void set_network_delay(rp *rp, uint32_t network_delay) {
+    if(rp->network_delay <= 0 || rp->average_network_delay <= 0) {
+        rp->network_delay = network_delay;
+        rp->average_network_delay = network_delay;
+    } else {
+        rp->average_network_delay = (rp->network_delay + network_delay) / 2;
+        rp->network_delay = network_delay;
+    }
+}
+
 static void process_packet(rp *rp, packet *pp) {
 	char auth_status;
 	char auth_msg[256];
 	memset(auth_msg, 0, 256);
-	long long expire = 0;
+    uint64_t expire = 0;
 	char auth_nick[256];
 	memset(auth_nick, 0, 256);
 
-	long long timeMillis, lastMillis;
+    uint64_t timeMillis, lastMillis;
 
 	pp->read = 0;
 	char type = pp->buf[pp->read++];
@@ -601,7 +611,7 @@ static void process_packet(rp *rp, packet *pp) {
 			timeMillis = currentTimeMillis();
 			lastMillis = read_long(pp->buf, pp->read);
 			pp->read += 8;
-			rp->network_delay = (int) (timeMillis - lastMillis);
+            set_network_delay(rp, (uint32_t) (timeMillis - lastMillis));
 		}
 		debug("RP_requestAuth msg=%s, expire=%lld, nick=%s, reconnect=%d, network_delay=%d", auth_msg, expire, auth_nick, rp->reconnect, rp->network_delay);
 		if(auth_status == 0) { // log success
@@ -614,7 +624,7 @@ static void process_packet(rp *rp, packet *pp) {
 		timeMillis = currentTimeMillis();
 		lastMillis = read_long(pp->buf, pp->read);
 		pp->read += 8;
-		rp->network_delay = (int) (timeMillis - lastMillis);
+        set_network_delay(rp, (uint32_t) (timeMillis - lastMillis));
 		// debug("set network_delay: %d, timeMillis=%ld, lastMillis=%ld, index=%d", client->network_delay, timeMillis, lastMillis, pp->read);
 		break;
     case RP_requestChangeIp:
@@ -652,7 +662,7 @@ static void rp_on_error(void *arg, char *exception) {
 	close_rp(rp, exception);
 }
 
-static void rp_on_data(void *arg, long long timeMillis) {
+static void rp_on_data(void *arg, uint64_t timeMillis) {
 	rp *rp = arg;
 	packet pp;
 
@@ -738,7 +748,7 @@ static void rp_on_data(void *arg, long long timeMillis) {
 	}
 }
 
-static void rp_on_ready(void *arg, long long timeMillis) {
+static void rp_on_ready(void *arg, uint64_t timeMillis) {
 	// debug("rp_on_ready arg=%p", arg);
 
 	rp *rp = arg;
@@ -771,7 +781,7 @@ static void rp_on_ready(void *arg, long long timeMillis) {
 	sock_write_buffer(rp->fd, buffer);
 }
 
-static void check_session(rp *rp, long long timeMillis) {
+static void check_session(rp *rp, uint64_t timeMillis) {
 	char buf[24];
 	size_t index = 4;
 	buf[index++] = RP_checkSession;
@@ -782,7 +792,7 @@ static void check_session(rp *rp, long long timeMillis) {
 	send_response(buf, index, &rp->buffer);
 }
 
-static void process_on_ready(void *arg, select_callback *callback, int fd, fd_set *writefds, long long timeMillis) {
+static void process_on_ready(void *arg, select_callback *callback, int fd, fd_set *writefds, uint64_t timeMillis) {
 	int err = 0;
 	socklen_t errlen = sizeof(err);
 
@@ -806,7 +816,7 @@ static void process_on_ready(void *arg, select_callback *callback, int fd, fd_se
 	FD_CLR(fd, writefds);
 }
 
-static void process_on_data(void *arg, select_callback *callback, int fd, fd_set *readfds, long long timeMillis) {
+static void process_on_data(void *arg, select_callback *callback, int fd, fd_set *readfds, uint64_t timeMillis) {
 	int err = 0;
 	socklen_t errlen = sizeof(err);
 
@@ -830,7 +840,7 @@ static void process_on_data(void *arg, select_callback *callback, int fd, fd_set
 	FD_CLR(fd, readfds);
 }
 
-static void reactor_review(rp *rp, long long timeMillis) {
+static void reactor_review(rp *rp, uint64_t timeMillis) {
 	fd_set readfds;
 	fd_set writefds;
 
@@ -959,8 +969,11 @@ static void* run(void *arg) {
 
 	// debug("run: %p", rp);
 	while(!rp->can_stop) {
+        uint64_t timeMillis = currentTimeMillis();
+        if(rp->alive_check_callback) {
+            rp->alive_check_callback(rp, timeMillis);
+        }
 		if(rp->fd > 0) {
-			long long timeMillis = currentTimeMillis();
 			if(rp->status == logged && timeMillis - rp->last_check_session >= 10000) {
 				rp->last_check_session = timeMillis;
 				check_session(rp, timeMillis);
@@ -981,6 +994,9 @@ static void* run(void *arg) {
 		}
 	}
 
+    if(rp->alive_check_callback) {
+        rp->alive_check_callback(rp, 0);
+    }
 	debug("thread finished can_stop=%d", rp->can_stop);
 	close_rp(rp, "finished.");
 	return NULL;
@@ -1001,6 +1017,7 @@ static rp* rp_init(char *address, char *port, char *username, char *password, ch
 		strcpy(rp->extra, extra);
 	}
 	rp->reconnect = true;
+    rp->init_time = currentTimeMillis();
 
 	select_callback *callback = &rp->callback;
 	callback->on_ready = rp_on_ready;
