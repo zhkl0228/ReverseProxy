@@ -36,6 +36,7 @@
 #define RP_sendException 0x6
 #define RP_requestAuth 0x7
 #define RP_checkSession 0x8
+#define RP_requestChangeIp 0xb
 #define RP_shutdownHalf 0xc
 
 #define READ_BUFFER_SIZE 1024
@@ -156,9 +157,9 @@ static socket_proxy *destroy_socket_proxy(socket_proxy *proxy) {
 	}
 	*proxy->prev = proxy->next;
 
+    socket_proxy *ret = proxy->next;
 	free(proxy);
-
-	return *proxy->prev;
+	return ret;
 }
 
 static void close_all_socket_proxy(rp *rp) {
@@ -616,6 +617,11 @@ static void process_packet(rp *rp, packet *pp) {
 		rp->network_delay = (int) (timeMillis - lastMillis);
 		// debug("set network_delay: %d, timeMillis=%ld, lastMillis=%ld, index=%d", client->network_delay, timeMillis, lastMillis, pp->read);
 		break;
+    case RP_requestChangeIp:
+        if(rp->change_ip_callback) {
+            rp->change_ip_callback(rp);
+        }
+        break;
 	case RP_shutdownHalf:
 		socket = read_int(pp->buf, pp->read);
 		pp->read += 4;
@@ -754,7 +760,7 @@ static void rp_on_ready(void *arg, long long timeMillis) {
 		} else {
 			buf[index++] = 0;//no extra data
 		}
-		buf[index++] = 0;//can not change ip
+        buf[index++] = rp->change_ip_callback ? 1 : 0;
 		index += write_long(&buf[index], timeMillis);
 		buf[index++] = 0;//no device info
 
@@ -948,6 +954,7 @@ static void* run(void *arg) {
 	rp *rp = arg;
 	rp->fd = 0;
 
+    sleep(3);
 	debug("thread_start can_stop=%d", rp->can_stop);
 
 	// debug("run: %p", rp);

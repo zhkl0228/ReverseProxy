@@ -69,6 +69,8 @@ typedef struct socket_proxy {
 	char shutdown;
 } socket_proxy;
 
+typedef void (*on_change_ip)(void *);
+
 typedef struct {
 	pthread_t thread;
 
@@ -96,6 +98,7 @@ typedef struct {
 	long long last_touch;
 
 	select_callback callback;
+    on_change_ip change_ip_callback;
 } rp;
 
 bool rp_running(rp *rp);
