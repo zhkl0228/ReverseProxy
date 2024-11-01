@@ -187,7 +187,6 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 
 	@Override
 	public void setSoLinger(boolean on, int linger) {
-		throw new UnsupportedOperationException("setSoLinger");
 	}
 
 	@Override

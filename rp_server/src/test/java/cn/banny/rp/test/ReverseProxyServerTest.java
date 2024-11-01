@@ -59,7 +59,7 @@ public class ReverseProxyServerTest {
 
 		MinaReverseProxyServer server = new MinaReverseProxyServer();
 		server.setListenPort(2016);
-		server.setUseSSL(true);
+		server.setUseSSL(false);
 		AbstractServerHandler<?> handler = new MinaServerHandler();
 		handler.setReconnect(true);
 		server.setHandler(handler);
@@ -229,7 +229,7 @@ public class ReverseProxyServerTest {
 		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create().register("http", new ConnectionSocketFactory() {
 			@Override
 			public Socket createSocket(HttpContext context) {
-				return route.waitingConnectSocket();
+				return route.createRemoteSocket();
 			}
 			@Override
 			public Socket connectSocket(int connectTimeout, Socket socket, HttpHost host,
@@ -243,7 +243,7 @@ public class ReverseProxyServerTest {
 		}).register("https", new SSLConnectionSocketFactory(ctx) {
 			@Override
 			public Socket createSocket(HttpContext context) {
-				return route.waitingConnectSocket();
+				return route.createRemoteSocket();
 			}
 		}).build();
 		PoolingHttpClientConnectionManager manager = new PoolingHttpClientConnectionManager(registry);

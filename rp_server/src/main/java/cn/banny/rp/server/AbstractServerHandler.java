@@ -120,9 +120,10 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 	}
 
 	private boolean forwardEnabled = true;
-	
-	public void setForwardEnabled(boolean forwardEnabled) {
-		this.forwardEnabled = forwardEnabled;
+
+	@SuppressWarnings("unused")
+	public void disableForward() {
+		this.forwardEnabled = false;
 	}
 
 	private void parseRequestForward(ByteBuffer in, AbstractRoute route) throws IOException {
@@ -222,7 +223,8 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 	}
 	
 	private RouteNetworkChangedListener routeNetworkChangedListener;
-	
+
+	@SuppressWarnings("unused")
 	public void setRouteNetworkChangedListener(
 			RouteNetworkChangedListener routeNetworkChangedListener) {
 		this.routeNetworkChangedListener = routeNetworkChangedListener;

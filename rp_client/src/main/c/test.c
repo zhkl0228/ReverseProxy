@@ -12,10 +12,10 @@
 #include "md5.h"
 #include "xml.h"
 
-#include <buffer.h>
+#include "buffer.h"
 #include "connect.h"
 
-static void test_xml() {
+static void test_xml(void) {
 	/* XML source, could be read from disk
 	 */
 	char *source = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -81,7 +81,7 @@ static void test_xml() {
 	xml_document_free(document, false);
 }
 
-static void http_test()
+static void http_test(void)
 {
     Buffer *response = buffer_alloc(BUF_SIZE);
 
@@ -103,7 +103,7 @@ static void http_test()
     sockfd = make_connection(res);
     error_unless(sockfd > 0, "Could not make connection to '%s' on port '%s'", url->hostname, url->port);
 
-    status = make_request(sockfd, url->hostname, url->path, url->query);
+    status = (int) make_request(sockfd, url->hostname, url->path, url->query);
     error_unless(status > 0, "Sending request failed");
 
     status = fetch_response(sockfd, &response, RECV_SIZE);

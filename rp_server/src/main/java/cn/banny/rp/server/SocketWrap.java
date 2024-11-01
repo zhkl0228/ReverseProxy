@@ -162,8 +162,12 @@ class SocketWrap extends Socket {
     }
 
     @Override
-    public int getSoLinger() {
-        throw new UnsupportedOperationException();
+    public int getSoLinger() throws SocketException {
+        if (wrapped == null) {
+            throw new UnsupportedOperationException();
+        } else {
+            return wrapped.getSoLinger();
+        }
     }
 
     @Override

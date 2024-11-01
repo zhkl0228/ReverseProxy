@@ -24,7 +24,7 @@
 #include "md5.h"
 #include "xml.h"
 
-#include <buffer.h>
+#include "buffer.h"
 #include "connect.h"
 
 #include "rp.h"
@@ -120,7 +120,7 @@ static long long read_long(char *data, size_t index) {
 	return (b1 << 56) | (b2 << 48) | (b3 << 40) | (b4 << 32) | (b5 << 24) | (b6 << 16) | (b7 << 8) | b8;
 }
 
-static long long currentTimeMillis() {
+static long long currentTimeMillis(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	long long t = tv.tv_sec;

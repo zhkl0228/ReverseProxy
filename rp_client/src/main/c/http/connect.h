@@ -4,7 +4,7 @@
 #include <netdb.h>
 #include <unistd.h>
 
-#include <buffer.h>
+#include "buffer.h"
 #include "dbg.h"
 
 #define RECV_SIZE 1024
