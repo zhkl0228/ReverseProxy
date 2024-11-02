@@ -70,8 +70,9 @@ typedef struct socket_proxy {
 	char shutdown;
 } socket_proxy;
 
-typedef void (*on_change_ip)(void *);
-typedef void (*alive_checker)(void *, uint64_t currentTimeInMillis);
+typedef void (*on_change_ip)(void *rp);
+typedef void (*alive_checker)(void *rp, uint64_t currentTimeInMillis);
+typedef void (*auth_listener)(void *rp, bool success);
 
 typedef struct {
 	pthread_t thread;
@@ -85,6 +86,7 @@ typedef struct {
 	int fd;
 
     uint64_t last_check_session;
+    uint64_t alive_time;
 	uint32_t network_delay;
     uint32_t average_network_delay;
 
@@ -104,6 +106,9 @@ typedef struct {
 	select_callback callback;
     on_change_ip change_ip_callback;
     alive_checker alive_check_callback;
+    auth_listener auth_callback;
+    
+    char lbs[2048];
 } rp;
 
 bool rp_running(rp *rp);
@@ -111,6 +116,8 @@ bool rp_running(rp *rp);
 rp* start_rp(char *address, char *port, char *username, char *password, char *extra);
 
 void stop_rp(rp *rp);
+
+void set_rp_lbs(rp *rp, const char *lbs);
 
 /**
  * channel initializer

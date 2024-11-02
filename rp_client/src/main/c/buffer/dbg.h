@@ -6,7 +6,11 @@
 #include <string.h>
 
 #ifndef NDEBUG
+#if defined(DEBUG)
+#define debug(M, ...) fprintf(stderr, "DEBUG %s (in function '%s'):%d:  " M "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#else
 #define debug(M, ...)
+#endif
 #else
 #define debug(M, ...) fprintf(stderr, "DEBUG %s (in function '%s'):%d:  " M "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #endif

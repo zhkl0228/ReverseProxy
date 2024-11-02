@@ -573,6 +573,7 @@ static void process_packet(rp *rp, packet *pp) {
 		// debug("RP_parseWriteData proxy=%p", proxy);
 		if(proxy != NULL) {
 			write_buffer_append(&pp->buf[pp->read], length, &proxy->buffer);
+            rp->alive_time = currentTimeMillis();
 		} else {
 			// debug("RP_parseWriteData find_by_socket failed: rp=%p, socket=0x%x", rp, socket);
 			char buf[16];
@@ -614,11 +615,15 @@ static void process_packet(rp *rp, packet *pp) {
             set_network_delay(rp, (uint32_t) (timeMillis - lastMillis));
 		}
 		debug("RP_requestAuth msg=%s, expire=%lld, nick=%s, reconnect=%d, network_delay=%d", auth_msg, expire, auth_nick, rp->reconnect, rp->network_delay);
-		if(auth_status == 0) { // log success
+        bool success = auth_status == 0;
+		if(success) { // log success
 			rp->status = logged;
 		} else {
 			close_rp(rp, "auth failed.");
 		}
+        if(rp->auth_callback) {
+            rp->auth_callback(rp, success);
+        }
 		break;
 	case RP_checkSession:
 		timeMillis = currentTimeMillis();
@@ -626,6 +631,7 @@ static void process_packet(rp *rp, packet *pp) {
 		pp->read += 8;
         set_network_delay(rp, (uint32_t) (timeMillis - lastMillis));
 		// debug("set network_delay: %d, timeMillis=%ld, lastMillis=%ld, index=%d", client->network_delay, timeMillis, lastMillis, pp->read);
+        rp->alive_time = timeMillis;
 		break;
     case RP_requestChangeIp:
         if(rp->change_ip_callback) {
@@ -782,12 +788,20 @@ static void rp_on_ready(void *arg, uint64_t timeMillis) {
 }
 
 static void check_session(rp *rp, uint64_t timeMillis) {
-	char buf[24];
+	char buf[27 + 2048];
 	size_t index = 4;
 	buf[index++] = RP_checkSession;
 	index += write_int(&buf[index], rp->network_delay);
 	index += write_long(&buf[index], timeMillis);
 	index += write_int(&buf[index], 0); // last network status code
+    
+    if(rp->lbs[0] != 0) {
+        buf[index++] = 1;
+        index += write_utf(&buf[index], rp->lbs);
+        rp->lbs[0] = 0;
+    } else {
+        buf[index++] = 0;
+    }
 
 	send_response(buf, index, &rp->buffer);
 }
@@ -1053,6 +1067,13 @@ bool rp_running(rp *rp) {
 	} else {
 		return false;
 	}
+}
+
+void set_rp_lbs(rp *rp, const char *lbs) {
+    debug("set_rp_lbs: %s", lbs);
+    if(lbs && strnlen(lbs, 2048) < 2048) {
+        strcpy(rp->lbs, lbs);
+    }
 }
 
 void get_user_agent(char *extra, const char *channel_id) {
