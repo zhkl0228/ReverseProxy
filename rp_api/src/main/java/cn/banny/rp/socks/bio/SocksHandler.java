@@ -169,7 +169,7 @@ public class SocksHandler implements Runnable {
         byte[] ipv4 = new byte[4];
         dis.readFully(ipv4);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(32);
         byte b;
         while((b = dis.readByte()) != 0) {
             baos.write(b);

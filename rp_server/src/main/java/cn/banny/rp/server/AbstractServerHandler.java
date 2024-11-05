@@ -98,7 +98,7 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 		ByteArrayOutputStream baos = null;
 		DataOutputStream dos = null;
 		try {
-			baos = new ByteArrayOutputStream();
+			baos = new ByteArrayOutputStream(data.length + 8);
 			dos = new DataOutputStream(baos);
 
 			dos.writeByte(0xf);
@@ -195,7 +195,7 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 		ByteArrayOutputStream baos = null;
 		DataOutputStream dos = null;
 		try {
-			baos = new ByteArrayOutputStream();
+			baos = new ByteArrayOutputStream(16);
 			dos = new DataOutputStream(baos);
 			
 			dos.writeByte(0x8);
@@ -212,6 +212,10 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 			} else {
 				closeSession(session);
 			}
+		}
+
+		if (authHandler != null) {
+			authHandler.onRouteSync(route);
 		}
 	}
 

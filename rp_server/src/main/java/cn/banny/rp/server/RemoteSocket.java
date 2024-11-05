@@ -37,7 +37,7 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 			ByteArrayOutputStream baos = null;
 			DataOutputStream dos = null;
 			try {
-				baos = new ByteArrayOutputStream();
+				baos = new ByteArrayOutputStream(8);
 				dos = new DataOutputStream(baos);
 				
 				dos.writeByte(0x3);
@@ -148,7 +148,7 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 		ByteArrayOutputStream baos = null;
 		DataOutputStream dos = null;
 		try {
-			baos = new ByteArrayOutputStream();
+			baos = new ByteArrayOutputStream(8);
 			dos = new DataOutputStream(baos);
 			
 			dos.writeByte(0xC);
@@ -166,7 +166,7 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 		ByteArrayOutputStream baos = null;
 		DataOutputStream dos = null;
 		try {
-			baos = new ByteArrayOutputStream();
+			baos = new ByteArrayOutputStream(8);
 			dos = new DataOutputStream(baos);
 			
 			dos.writeByte(0xC);
@@ -231,7 +231,7 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 		ByteArrayOutputStream baos = null;
 		DataOutputStream dos = null;
 		try {
-			baos = new ByteArrayOutputStream();
+			baos = new ByteArrayOutputStream(64);
 			dos = new DataOutputStream(baos);
 			
 			dos.writeByte(0x1);
@@ -338,7 +338,7 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 		ByteArrayOutputStream baos = null;
 		DataOutputStream dos = null;
 		try {
-			baos = new ByteArrayOutputStream();
+			baos = new ByteArrayOutputStream(data.length + 16);
 			dos = new DataOutputStream(baos);
 			
 			dos.writeByte(0x2);

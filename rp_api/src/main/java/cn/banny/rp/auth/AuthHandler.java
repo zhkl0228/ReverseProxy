@@ -2,12 +2,16 @@ package cn.banny.rp.auth;
 
 import cn.banny.rp.Route;
 import cn.banny.rp.forward.PortForwarder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zhkl0228
  *
  */
 public interface AuthHandler {
+
+	Logger log = LoggerFactory.getLogger(AuthHandler.class);
 	
 	/**
 	 * 登录
@@ -20,6 +24,10 @@ public interface AuthHandler {
 	void onAuth(Route route, String username);
 
 	void onRouteDisconnect(Route route);
+
+	default void onRouteSync(Route route) {
+		log.debug("onRouteSync: {}", route);
+	}
 
 	/**
 	 * 当一个端口转向成功连接时通知

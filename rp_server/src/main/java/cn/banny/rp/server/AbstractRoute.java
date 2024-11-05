@@ -268,7 +268,7 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 		ByteArrayOutputStream baos = null;
 		DataOutputStream dos = null;
 		try {
-			baos = new ByteArrayOutputStream();
+			baos = new ByteArrayOutputStream(msg.length + 8);
 			dos = new DataOutputStream(baos);
 			
 			dos.writeByte(0x9);

@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -138,17 +137,12 @@ public abstract class AbstractSocksHandler<T extends Closeable> implements Forwa
 		byte[] ipv4 = new byte[4];
 		readBuffer.get(ipv4);
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(32);
 		byte b;
 		while((b = readBuffer.get()) != 0) {
 			baos.write(b);
 		}
-		String user;
-		try {
-			user = baos.toString("UTF-8");
-		} catch(UnsupportedEncodingException e) {
-			user = baos.toString();
-		}
+		String user = new String(baos.toByteArray(), StandardCharsets.UTF_8);
 		
 		if(ipv4[0] == 0 && ipv4[1] == 0 && ipv4[2] == 0 && ipv4[3] != 0) { // socksv4a
 			baos.reset();
