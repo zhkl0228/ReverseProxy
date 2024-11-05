@@ -791,7 +791,7 @@ static void check_session(rp *rp, uint64_t timeMillis) {
 	char buf[27 + 2048];
 	size_t index = 4;
 	buf[index++] = RP_checkSession;
-	index += write_int(&buf[index], rp->network_delay);
+    index += write_int(&buf[index], rp->average_network_delay > 0 ? rp->average_network_delay : rp->network_delay);
 	index += write_long(&buf[index], timeMillis);
 	index += write_int(&buf[index], 0); // last network status code
     
