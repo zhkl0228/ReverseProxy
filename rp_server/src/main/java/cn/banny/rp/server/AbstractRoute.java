@@ -293,25 +293,14 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	}
 	
 	int networkDelay = -1;
-	int averageNetworkDelay;
 
 	void setNetworkDelay(int delay) {
-		if (networkDelay <= 0) {
-			averageNetworkDelay = delay;
-		} else {
-			averageNetworkDelay = (networkDelay + delay) / 2;
-		}
 		networkDelay = delay;
 	}
 
 	@Override
 	public int getNetworkDelay() {
 		return networkDelay;
-	}
-
-	@Override
-	public int getAverageNetworkDelay() {
-		return averageNetworkDelay;
 	}
 
 	int version = 0x10000;

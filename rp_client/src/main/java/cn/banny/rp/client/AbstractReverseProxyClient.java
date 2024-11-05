@@ -383,7 +383,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			writeBuffer.mark();
 			writeBuffer.position(writeBuffer.position() + 4);
 			writeBuffer.put((byte) 0x8);
-			writeBuffer.putInt(averageNetworkDelay);
+			writeBuffer.putInt(averageNetworkDelay > 0 ? averageNetworkDelay : networkDelay);
 			writeBuffer.putLong(currentTimeMillis);
 			writeBuffer.putInt(0);
 
