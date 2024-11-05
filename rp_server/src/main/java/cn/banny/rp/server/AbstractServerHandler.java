@@ -169,9 +169,7 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 		long time = in.getLong();
 
 		if(networkDelay > 0) {
-			route.networkDelay = networkDelay;
-		} else if(networkDelay == 0) {
-			route.networkDelay = 1;
+			route.setNetworkDelay(networkDelay);
 		}
 
 		if(route.getVersion() >= 0x10002) {

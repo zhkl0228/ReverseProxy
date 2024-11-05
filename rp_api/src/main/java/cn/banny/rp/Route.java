@@ -54,6 +54,7 @@ public interface Route extends MessageDeliver, RouteContext {
 	 * @return 网络延时
 	 */
 	int getNetworkDelay();
+	int getAverageNetworkDelay();
 	
 	/**
 	 * 端口转发
