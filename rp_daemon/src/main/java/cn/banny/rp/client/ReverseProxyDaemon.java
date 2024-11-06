@@ -1,7 +1,6 @@
 package cn.banny.rp.client;
 
 import cn.banny.rp.client.config.RemoteServer;
-import cn.banny.utils.IOUtils;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 
@@ -34,15 +33,11 @@ public class ReverseProxyDaemon implements Daemon {
 	 */
 	@Override
 	public void init(DaemonContext context) throws Exception {
-		FileInputStream inputStream = null;
-		try {
-			inputStream = new FileInputStream("config.xml");
+		try (FileInputStream inputStream = new FileInputStream("config.xml")) {
 			remoteServers = ReverseProxyProcrun.parseRemoteServers(inputStream);
 			if(remoteServers == null || remoteServers.isEmpty()) {
 				throw new Exception("config.xml error!");
 			}
-		} finally {
-			IOUtils.close(inputStream);
 		}
 	}
 

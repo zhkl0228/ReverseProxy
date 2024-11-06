@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define RP_VERSION 0x50010
+#define RP_VERSION 0x50011
 
 typedef struct {
 	char hostname[64];

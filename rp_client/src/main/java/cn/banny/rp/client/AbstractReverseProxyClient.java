@@ -1,6 +1,5 @@
 package cn.banny.rp.client;
 
-import cn.banny.auxiliary.Inspector;
 import cn.banny.rp.RequestConnect;
 import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.auth.AuthResult;
@@ -582,9 +581,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		boolean fromServer = in.get() == 1;
 		byte[] data = new byte[in.getShort() & 0xffff];
 		in.get(data);
-		if (log.isDebugEnabled()) {
-			Inspector.inspect(data, "parseBroadcast fromServer=" + fromServer);
-		}
+		log.debug("parseBroadcast fromServer={}, data={}", fromServer, data);
 		if (broadcastListener != null) {
 			broadcastListener.onBroadcast(fromServer, data);
 		}

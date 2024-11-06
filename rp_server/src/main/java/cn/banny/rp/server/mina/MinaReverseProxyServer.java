@@ -2,7 +2,6 @@ package cn.banny.rp.server.mina;
 
 import cn.banny.rp.server.ReverseProxyServer;
 import cn.banny.rp.server.ServerHandler;
-import cn.banny.utils.StringUtils;
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandler;
@@ -113,7 +112,7 @@ public class MinaReverseProxyServer implements ReverseProxyServer {
 							logger.debug("checkClientTrusted certs={}, authType={}", Arrays.toString(certs), authType);
 						}
 
-						if (certs == null || certs.length == 0 || StringUtils.isEmpty(authType)) {
+						if (certs == null || certs.length == 0 || authType == null || authType.isEmpty()) {
 							throw new IllegalArgumentException("null or zero-length parameter");
 						}
 

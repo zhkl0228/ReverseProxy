@@ -3,10 +3,15 @@
  */
 package cn.banny.rp.client.config;
 
-import cn.banny.utils.IOUtils;
 import org.apache.commons.exec.PumpStreamHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Vector;
 
@@ -61,19 +66,14 @@ public class StreamExtractHandler extends PumpStreamHandler {
 	}
 
 	private String[] extractLines(InputStream in, Charset charset) {
-		BufferedReader reader = null;
 		Vector<String> lines = new Vector<>();
-		try {
-			reader = new BufferedReader(new InputStreamReader(in, charset));
-			
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, charset))) {
 			String line;
 			while((line = reader.readLine()) != null) {
 				lines.add(line);
 			}
 		} catch (IOException e) {
 			e.printStackTrace(System.err);
-		} finally {
-			IOUtils.close(reader);
 		}
 		
 		String[] values = new String[lines.size()];

@@ -10,7 +10,6 @@ import cn.banny.rp.io.ByteBufferPool;
 import cn.banny.rp.io.MappedByteBufferPool;
 import cn.banny.rp.io.NIOSocketSession;
 import cn.banny.rp.io.NIOSocketSessionDispatcher;
-import cn.banny.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +87,7 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
                         log.debug("checkServerTrusted certs={}, authType={}", Arrays.toString(certs), authType);
 					}
 
-					if (certs == null || certs.length == 0 || StringUtils.isEmpty(authType)) {
+					if (certs == null || certs.length == 0 || authType == null || authType.isEmpty()) {
 						throw new IllegalArgumentException("null or zero-length parameter");
 					}
 

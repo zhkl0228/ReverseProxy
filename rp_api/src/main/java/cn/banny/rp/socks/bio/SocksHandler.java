@@ -2,7 +2,7 @@ package cn.banny.rp.socks.bio;
 
 import cn.banny.rp.socks.SocketFactory;
 import cn.banny.rp.socks.SocketType;
-import cn.banny.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,9 +57,9 @@ public class SocksHandler implements Runnable {
         } catch (IOException e) {
             log.debug(e.getMessage(), e);
 
-            IOUtils.close(inputStream);
-            IOUtils.close(outputStream);
-            IOUtils.close(socket);
+            IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(outputStream);
+            IOUtils.closeQuietly(socket);
         }
     }
 

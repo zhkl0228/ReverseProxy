@@ -20,7 +20,9 @@
 -(rp *) loginWithUsername: (NSString *) username password : (NSString *) password extraData : (NSString *) extra {
     NSString *ip = [self ip];
     NSString *port = [self port];
-    return start_rp([ip cStringUsingEncoding:kCFStringEncodingUTF8], [port cStringUsingEncoding:kCFStringEncodingUTF8], [username cStringUsingEncoding:kCFStringEncodingUTF8], [password cStringUsingEncoding:kCFStringEncodingUTF8], [extra cStringUsingEncoding:kCFStringEncodingUTF8]);
+    rp *_rp = start_rp([ip cStringUsingEncoding:kCFStringEncodingUTF8], [port cStringUsingEncoding:kCFStringEncodingUTF8], [username cStringUsingEncoding:kCFStringEncodingUTF8], [password cStringUsingEncoding:kCFStringEncodingUTF8], [extra cStringUsingEncoding:kCFStringEncodingUTF8]);
+    _rp->reconnect = true;
+    return _rp;
 }
 
 @end

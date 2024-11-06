@@ -2,7 +2,7 @@ package cn.banny.rp.socks.bio;
 
 import cn.banny.rp.socks.SocketFactory;
 import cn.banny.rp.socks.SocksServer;
-import cn.banny.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +74,7 @@ public class BIOSocksServer implements SocksServer, Runnable, ThreadFactory {
             try {
                 Socket socket = serverSocket.accept();
                 if (!active) { // 没有启用
-                    IOUtils.close(socket);
+                    IOUtils.closeQuietly(socket);
                     continue;
                 }
 
@@ -88,7 +88,7 @@ public class BIOSocksServer implements SocksServer, Runnable, ThreadFactory {
     @Override
     public void stopSilent() {
         canStop = true;
-        IOUtils.close(serverSocket);
+        IOUtils.closeQuietly(serverSocket);
         executorService.shutdown();
     }
 

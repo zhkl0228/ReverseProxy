@@ -9,10 +9,7 @@ import cn.banny.rp.auth.Auth;
 import cn.banny.rp.auth.AuthHandler;
 import cn.banny.rp.forward.PortForwarder;
 import cn.banny.rp.server.forward.BIOPortForwarder;
-import cn.banny.utils.IOUtils;
-import com.alibaba.fastjson.JSON;
-import com.fuzhu8.device.AndroidDevice;
-import com.fuzhu8.device.android.Device;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,28 +94,19 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 		}
 	}
 	
-	private Device device;
+	private String deviceInfo;
 	
 	@Override
-	public Device getDevice() {
-		return device;
+	public String getDeviceInfo() {
+		return deviceInfo;
 	}
 	
-	void setDeviceData(byte[] zipDeviceData) {
-		InputStream inputStream = null;
-		GZIPInputStream gzip = null;
-		try {
-			inputStream = new ByteArrayInputStream(zipDeviceData);
-			gzip = new GZIPInputStream(inputStream);
-			
-			device = JSON.parseObject(gzip, StandardCharsets.UTF_8, AndroidDevice.class);
-		} catch(Throwable t) {
-			if(log.isDebugEnabled()) {
-				log.debug(t.getMessage(), t);
-			}
-		} finally {
-			IOUtils.close(gzip);
-			IOUtils.close(inputStream);
+	void setDeviceData(byte[] deviceData) {
+		try (InputStream inputStream = new ByteArrayInputStream(deviceData);
+			 InputStream gzip = new GZIPInputStream(inputStream)) {
+			deviceInfo = IOUtils.toString(gzip, StandardCharsets.UTF_8);
+		} catch (Throwable t) {
+			log.warn("setDeviceData", t);
 		}
 	}
 

@@ -2,7 +2,6 @@ package cn.banny.rp;
 
 import cn.banny.rp.auth.Auth;
 import cn.banny.rp.forward.PortForwarder;
-import com.fuzhu8.device.android.Device;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -99,7 +98,7 @@ public interface Route extends MessageDeliver, RouteContext {
 	/**
 	 * @return Android客户端设备信息
 	 */
-	Device getDevice();
+	String getDeviceInfo();
 
 	Socket createRemoteSocket();
 

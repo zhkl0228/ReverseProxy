@@ -158,6 +158,7 @@ static socket_proxy *destroy_socket_proxy(socket_proxy *proxy) {
 	*proxy->prev = proxy->next;
 
     socket_proxy *ret = proxy->next;
+    close(proxy->fd);
 	free(proxy);
 	return ret;
 }

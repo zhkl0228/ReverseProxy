@@ -1,7 +1,6 @@
 package cn.banny.rp.socks.bio;
 
-import cn.banny.utils.IOUtils;
-import cn.banny.utils.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +20,7 @@ public class SocksShutdownListener implements ShutdownListener {
 
     @Override
     public void onStreamStart() {
-        if (StringUtils.hasText(threadName)) {
+        if (threadName != null) {
             Thread thread = Thread.currentThread();
             thread.setName(threadName);
         }
@@ -31,7 +30,7 @@ public class SocksShutdownListener implements ShutdownListener {
     public synchronized void onShutdownInput(Socket socket) {
         if (socket == out) {
             log.debug("onShutdownInput close socket: {}", socket);
-            IOUtils.close(socket);
+            IOUtils.closeQuietly(socket);
         } else {
             in = socket;
         }
@@ -41,7 +40,7 @@ public class SocksShutdownListener implements ShutdownListener {
     public synchronized void onShutdownOutput(Socket socket) {
         if (socket == in) {
             log.debug("onShutdownOutput close socket: {}", socket);
-            IOUtils.close(socket);
+            IOUtils.closeQuietly(socket);
         } else {
             out = socket;
         }
