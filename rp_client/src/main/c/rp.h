@@ -113,7 +113,7 @@ typedef struct {
 
 bool rp_running(rp *rp);
 
-rp* start_rp(char *address, char *port, char *username, char *password, char *extra);
+rp* start_rp(const char *address, const char *port, const char *username, const char *password, const char *extra);
 
 void stop_rp(rp *rp);
 

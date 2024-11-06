@@ -1016,7 +1016,7 @@ static void* run(void *arg) {
 	return NULL;
 }
 
-static rp* rp_init(char *address, char *port, char *username, char *password, char *extra) {
+static rp* rp_init(const char *address, const char *port, const char *username, const char *password, const char *extra) {
 	debug("rp_init %s:%s", address, port);
 	size_t size_of_rp = sizeof(rp);
 	rp *rp = malloc(size_of_rp);
@@ -1052,7 +1052,7 @@ void stop_rp(rp *rp) {
 	rp_destroy(rp);
 }
 
-rp* start_rp(char *address, char *port, char *username, char *password, char *extra) {
+rp* start_rp(const char *address, const char *port, const char *username, const char *password, const char *extra) {
 	rp *pp = rp_init(address, port, username, password, extra);
 
 	debug("pthread_create: rp=%p", pp);

@@ -20,6 +20,7 @@
 		229FAE142CD4E5A2007907F5 /* xml.c in Sources */ = {isa = PBXBuildFile; fileRef = 229FAE0D2CD4E5A2007907F5 /* xml.c */; };
 		229FAE152CD4E5A2007907F5 /* md5.h in Headers */ = {isa = PBXBuildFile; fileRef = 229FAE0E2CD4E5A2007907F5 /* md5.h */; };
 		229FAE162CD4E5A2007907F5 /* rp.h in Headers */ = {isa = PBXBuildFile; fileRef = 229FAE0F2CD4E5A2007907F5 /* rp.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		229FAE1F2CDB0B3D007907F5 /* ReverseProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 229FAE1E2CDB0B3D007907F5 /* ReverseProxy.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		229FAE0D2CD4E5A2007907F5 /* xml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xml.c; path = c/xml.c; sourceTree = SOURCE_ROOT; };
 		229FAE0E2CD4E5A2007907F5 /* md5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = md5.h; path = c/md5.h; sourceTree = SOURCE_ROOT; };
 		229FAE0F2CD4E5A2007907F5 /* rp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rp.h; path = c/rp.h; sourceTree = SOURCE_ROOT; };
+		229FAE1E2CDB0B3D007907F5 /* ReverseProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = ReverseProxy.m; path = ReverseProxy/ReverseProxy.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +81,7 @@
 				229FAE002CD4E597007907F5 /* buffer */,
 				229FADFD2CD4E597007907F5 /* http */,
 				229FADF62CD4E535007907F5 /* ReverseProxy.h */,
+				229FAE1E2CDB0B3D007907F5 /* ReverseProxy.m */,
 			);
 			path = ReverseProxy;
 			sourceTree = "<group>";
@@ -193,6 +196,7 @@
 				229FAE102CD4E5A2007907F5 /* test.c in Sources */,
 				229FAE132CD4E5A2007907F5 /* rp.c in Sources */,
 				229FAE142CD4E5A2007907F5 /* xml.c in Sources */,
+				229FAE1F2CDB0B3D007907F5 /* ReverseProxy.m in Sources */,
 				229FAE052CD4E597007907F5 /* connect.c in Sources */,
 				229FAE062CD4E597007907F5 /* buffer.c in Sources */,
 			);
