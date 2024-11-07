@@ -1,5 +1,7 @@
 package cn.banny.rp;
 
+import java.util.Map;
+
 /**
  * @author zhkl0228
  *
@@ -7,5 +9,7 @@ package cn.banny.rp;
 public interface RouteContext {
 	
 	Attribute createAttribute(String name);
+
+	Map<String, Object> getAttributes();
 
 }

@@ -24,7 +24,7 @@ public class MinaRemoteRoute extends AbstractRoute implements Route {
 		super(authHandler);
 		this.session = session;
 		
-		this.remoteAddressContext = RemoteAddressContext.obtain(getRemoteAddress().getHostString());
+		this.remoteAddressContext = RemoteAddressContext.obtain(getRemoteAddress().getHostString(), null);
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public class MinaRemoteRoute extends AbstractRoute implements Route {
 
 	@Override
 	public RouteContext getRemoteAddressContext() {
-		return remoteIp == null ? remoteAddressContext : RemoteAddressContext.obtain(remoteIp);
+		return remoteIp == null ? remoteAddressContext : RemoteAddressContext.obtain(remoteIp, remoteAddressContext);
 	}
 
 }

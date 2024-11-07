@@ -302,8 +302,8 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 
 	void setLastReceivedTime(long lastReceivedTime) {
 		this.lastReceivedTime = lastReceivedTime;
-		
-		RemoteAddressContext.obtain(getRemoteAddress().getHostString()); // keep remote address context alive
+
+		RemoteAddressContext.keepRemoteAddressContextAlive(remoteIp, getRemoteAddress().getHostString());
 	}
 
 	@Override

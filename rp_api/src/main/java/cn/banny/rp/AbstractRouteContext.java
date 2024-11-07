@@ -1,5 +1,6 @@
 package cn.banny.rp;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -9,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class AbstractRouteContext implements RouteContext {
 	
-	private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+	protected final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
 	protected final void setAttribute(String key, Object attr) {
 		if(attr == null) {
@@ -18,6 +19,11 @@ public abstract class AbstractRouteContext implements RouteContext {
 		}
 
 		attributes.put(key, attr);
+	}
+
+	@Override
+	public Map<String, Object> getAttributes() {
+		return Collections.unmodifiableMap(attributes);
 	}
 
 	protected final <T> T getAttribute(String key, Class<T> clazz) {
