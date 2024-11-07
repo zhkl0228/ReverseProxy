@@ -534,11 +534,11 @@ static void process_packet(rp *rp, packet *pp) {
 		memset(proxy, 0, size_of_proxy);
 		proxy->socket = socket;
 		if(has_ip) {
-			strcpy(proxy->host, ip);
+			strncpy(proxy->host, ip, MAX_ADDRESS_LEN);
 		} else {
-			strcpy(proxy->host, host);
+			strncpy(proxy->host, host, MAX_ADDRESS_LEN);
 		}
-		strcpy(proxy->port, port);
+		strncpy(proxy->port, port, MAX_PORT_LEN);
 		proxy->shutdown = 0;
 		proxy->next = NULL;
 
@@ -911,6 +911,8 @@ static void reactor_review(rp *rp, uint64_t timeMillis) {
 		}
 		next = next->next;
 	}
+    
+    rp->maxfd = maxfd;
 
 	void *args[maxfd + 1];
 	select_callback *callback[maxfd + 1];
@@ -1032,12 +1034,12 @@ static rp* rp_init(const char *address, const char *port, const char *username, 
 	memset(rp, 0, size_of_rp);
 	rp->can_stop = false;
 
-	strcpy(rp->address, address);
-	strcpy(rp->port, port);
-	strcpy(rp->username, username);
-	strcpy(rp->password, password);
+	strncpy(rp->address, address, MAX_ADDRESS_LEN);
+	strncpy(rp->port, port, MAX_PORT_LEN);
+	strncpy(rp->username, username, MAX_USERNAME_LEN);
+	strncpy(rp->password, password, MAX_PASSWORD_LEN);
 	if(extra) {
-		strcpy(rp->extra, extra);
+		strncpy(rp->extra, extra, MAX_EXTRA_DATA_LEN);
 	}
 	rp->reconnect = true;
     rp->init_time = currentTimeMillis();

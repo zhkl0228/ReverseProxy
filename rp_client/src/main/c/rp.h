@@ -45,10 +45,16 @@ typedef struct {
 	void (*on_data_error)(void *arg, char *exception);
 } select_callback;
 
+#define MAX_ADDRESS_LEN 32
+#define MAX_PORT_LEN 8
+#define MAX_USERNAME_LEN 32
+#define MAX_PASSWORD_LEN 64
+#define MAX_EXTRA_DATA_LEN 128
+
 typedef struct socket_proxy {
 	int socket;
-	char host[32];
-	char port[8];
+	char host[MAX_ADDRESS_LEN];
+	char port[MAX_PORT_LEN];
 	int fd;
 	int timeout;
 	write_buffer *buffer;
@@ -78,13 +84,14 @@ typedef void (*on_close)(void *rp, const char *exception);
 typedef struct {
 	pthread_t thread;
 
-	char address[32];
-	char port[8];
-	char username[32];
-	char password[64];
-	char extra[128];
+	char address[MAX_ADDRESS_LEN];
+	char port[MAX_PORT_LEN];
+	char username[MAX_USERNAME_LEN];
+	char password[MAX_PASSWORD_LEN];
+	char extra[MAX_EXTRA_DATA_LEN];
 
 	int fd;
+    int maxfd;
 
     uint64_t last_check_session;
     uint64_t alive_time;
