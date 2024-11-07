@@ -73,6 +73,7 @@ typedef struct socket_proxy {
 typedef void (*on_change_ip)(void *rp);
 typedef void (*alive_checker)(void *rp, uint64_t currentTimeInMillis);
 typedef void (*auth_listener)(void *rp, bool success);
+typedef void (*on_close)(void *rp, const char *exception);
 
 typedef struct {
 	pthread_t thread;
@@ -107,8 +108,9 @@ typedef struct {
     on_change_ip change_ip_callback;
     alive_checker alive_check_callback;
     auth_listener auth_callback;
+    on_close close_callback;
     
-    char lbs[2048];
+    char *lbs;
 } rp;
 
 bool rp_running(rp *rp);

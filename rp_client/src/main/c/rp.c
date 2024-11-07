@@ -171,7 +171,11 @@ static void close_all_socket_proxy(rp *rp) {
 	debug("close_all_socket_proxy done.");
 }
 
-static void close_rp(rp *rp, char *exception) {
+static void close_rp(rp *rp, const char *exception) {
+    if(rp->close_callback) {
+        rp->close_callback(rp, exception);
+    }
+    
 	close_all_socket_proxy(rp);
 	if(rp->fd > 0) {
 		close(rp->fd);
@@ -183,6 +187,10 @@ static void close_rp(rp *rp, char *exception) {
 	rp->fd = 0;
 	rp->status = offline;
 	rp->connected = false;
+    if(rp->lbs) {
+        free(rp->lbs);
+        rp->lbs = NULL;
+    }
 	write_buffer_destroy(&rp->buffer);
 }
 
@@ -796,7 +804,7 @@ static void check_session(rp *rp, uint64_t timeMillis) {
 	index += write_long(&buf[index], timeMillis);
 	index += write_int(&buf[index], 0); // last network status code
     
-    if(rp->lbs[0] != 0) {
+    if(rp->lbs && rp->lbs[0] != 0) {
         buf[index++] = 1;
         index += write_utf(&buf[index], rp->lbs);
         rp->lbs[0] = 0;
@@ -1072,7 +1080,12 @@ bool rp_running(rp *rp) {
 
 void set_rp_lbs(rp *rp, const char *lbs) {
     debug("set_rp_lbs: %s", lbs);
-    if(lbs && strnlen(lbs, 2048) < 2048) {
+    if(lbs && strnlen(lbs, 16) > 0) {
+        if(rp->lbs) {
+            free(rp->lbs);
+            rp->lbs = NULL;
+        }
+        rp->lbs = malloc(strlen(lbs) + 1);
         strcpy(rp->lbs, lbs);
     }
 }
