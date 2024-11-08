@@ -59,7 +59,11 @@ public class MinaRemoteRoute extends AbstractRoute implements Route {
 
 	@Override
 	public RouteContext getRemoteAddressContext() {
-		return remoteIp == null ? remoteAddressContext : RemoteAddressContext.obtain(remoteIp, remoteAddressContext);
+		if (remoteIp == null || remoteIp.isEmpty() || remoteIp.equals(getRemoteAddress().getHostString())) {
+			return remoteAddressContext;
+		} else {
+			return RemoteAddressContext.obtain(remoteIp, remoteAddressContext);
+		}
 	}
 
 }
