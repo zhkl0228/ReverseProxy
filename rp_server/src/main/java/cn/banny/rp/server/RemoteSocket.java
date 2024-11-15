@@ -3,6 +3,8 @@ package cn.banny.rp.server;
 import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.ReverseProxyReceiver;
 import cn.banny.rp.Route;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.*;
@@ -14,6 +16,8 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class RemoteSocket extends Socket implements ReverseProxyReceiver {
+
+	private static final Logger log = LoggerFactory.getLogger(RemoteSocket.class);
 	
 	private ProxyPipedInputStream localIn;
 	private OutputStream localOut;
@@ -23,8 +27,6 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 		
 		this.route = route;
 	}
-	
-	private PipedOutputStream pipedOut;
 	
 	@Override
 	public synchronized void close() throws IOException {
@@ -72,9 +74,8 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 		if(route == null) {
 			throw new IOException("Connect failed: route is null");
 		}
-		
-		pipedOut = new PipedOutputStream();
-		localIn = new ProxyPipedInputStream(pipedOut, getSoTimeout());
+
+		localIn = new ProxyPipedInputStream(getSoTimeout());
 		
 		localOut = new ProxyOutputStream(this);
 
@@ -296,11 +297,9 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 		}
 		
 		ReverseProxy.closeQuietly(localOut);
-		ReverseProxy.closeQuietly(pipedOut);
 		ReverseProxy.closeQuietly(localIn);
 		
 		localOut = null;
-		pipedOut = null;
 		localIn = null;
 		
 		try {
@@ -322,11 +321,10 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 	@Override
 	public void parseReadData(byte[] data, int offset, int length) {
 		try {
-			pipedOut.write(data, offset, length);
-			pipedOut.flush();
-		} catch (IOException e) {
-			e.printStackTrace(System.err);
-			ReverseProxy.closeQuietly(pipedOut);
+			localIn.writeData(data, offset, length);
+		} catch (Exception e) {
+			log.warn("parseReadData", e);
+			ReverseProxy.closeQuietly(localIn);
 		}
 	}
 	
@@ -371,7 +369,7 @@ public class RemoteSocket extends Socket implements ReverseProxyReceiver {
 			if(flag) {
 				localOut.close();
 			} else {
-				pipedOut.close();
+				localIn.close();
 			}
 		} catch(IOException e) {
 			ReverseProxy.closeQuietly(this);
