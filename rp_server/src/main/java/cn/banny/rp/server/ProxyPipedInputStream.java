@@ -1,5 +1,6 @@
 package cn.banny.rp.server;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ public class ProxyPipedInputStream extends InputStream {
 
     private static final Logger log = LoggerFactory.getLogger(ProxyPipedInputStream.class);
 
-    private final BlockingQueue<Byte> queue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Integer> queue = new LinkedBlockingQueue<>();
 	
 	public ProxyPipedInputStream(int soTimeout) {
 		super();
@@ -28,11 +29,17 @@ public class ProxyPipedInputStream extends InputStream {
 	}
 
     final void writeData(byte[] data, int offset, int length) {
+        if (data == null) {
+            throw new NullPointerException();
+        }
+        if(offset < 0 || length < 0 || length > data.length - offset) {
+            throw new IndexOutOfBoundsException("offset=" + offset + ", length=" + length + ", data.length=" + data.length);
+        }
         try {
             for (int i = 0; i < length; i++) {
-                queue.put(data[i + offset]);
+                queue.put(data[i + offset] & 0xff);
             }
-        } catch(InterruptedException e) {
+        } catch(Exception e) {
             log.warn("writeData", e);
         }
     }
@@ -48,34 +55,39 @@ public class ProxyPipedInputStream extends InputStream {
 	@Override
 	public void close() throws IOException {
         log.debug("close");
-		closeRequested = true;
         try {
-            queue.put((byte) -1);
+            closeRequested = true;
+            queue.put(IOUtils.EOF);
         } catch (InterruptedException e) {
             throw new IOException("close", e);
         }
     }
 
     @Override
-    public int available() throws IOException {
-        return super.available();
+    public int available() {
+        int size = queue.size();
+        if (size == 0) {
+            return 0;
+        }
+        return size - (closeRequested ? 1 : 0);
     }
+
+    private boolean eof;
 
     @Override
 	public int read() throws IOException {
-        if (closeRequested) {
-            throw new IOException("Stream closed");
+        if (eof) {
+            throw new EOFException();
         }
-
         long start = System.currentTimeMillis();
         while (true) {
             try {
-                Byte b = queue.poll(soTimeout < 1 ? 1000 : soTimeout, TimeUnit.MILLISECONDS);
-                if (closeRequested) {
-                    throw new EOFException();
-                }
+                Integer b = queue.poll(soTimeout < 1 ? 1000 : soTimeout, TimeUnit.MILLISECONDS);
                 if (b != null) {
-                    return b & 0xff;
+                    if (b == IOUtils.EOF) {
+                        eof = true;
+                    }
+                    return b;
                 }
             	if(soTimeout > 0 &&
             			System.currentTimeMillis() - start >= soTimeout) {
