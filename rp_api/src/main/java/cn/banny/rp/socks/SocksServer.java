@@ -18,4 +18,7 @@ public interface SocksServer {
     @SuppressWarnings("unused")
     void setSocketFactory(SocketFactory socketFactory);
 
+    @SuppressWarnings("unused")
+    void setServerSocketFactory(ServerSocketFactory serverSocketFactory);
+
 }

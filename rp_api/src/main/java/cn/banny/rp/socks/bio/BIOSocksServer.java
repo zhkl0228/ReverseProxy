@@ -1,5 +1,6 @@
 package cn.banny.rp.socks.bio;
 
+import cn.banny.rp.socks.ServerSocketFactory;
 import cn.banny.rp.socks.SocketFactory;
 import cn.banny.rp.socks.SocksServer;
 import org.apache.commons.io.IOUtils;
@@ -21,11 +22,11 @@ public class BIOSocksServer implements SocksServer, Runnable, ThreadFactory {
 
     private static final Logger log = LoggerFactory.getLogger(BIOSocksServer.class);
 
-    private final InetSocketAddress bind;
+    private final InetSocketAddress bindAddress;
 
-    public BIOSocksServer(InetSocketAddress bind) {
+    public BIOSocksServer(InetSocketAddress bindAddress) {
         super();
-        this.bind = bind;
+        this.bindAddress = bindAddress;
     }
 
     @Override
@@ -44,8 +45,8 @@ public class BIOSocksServer implements SocksServer, Runnable, ThreadFactory {
     public void start() throws Exception {
         executorService = Executors.newCachedThreadPool(this);
 
-        serverSocket = new ServerSocket();
-        serverSocket.bind(bind);
+        serverSocket = serverSocketFactory == null ? new ServerSocket() : serverSocketFactory.newServerSocket();
+        serverSocket.bind(bindAddress);
         log.debug("start bind port: {}", getBindPort());
         canStop = false;
         active = true;
@@ -64,6 +65,13 @@ public class BIOSocksServer implements SocksServer, Runnable, ThreadFactory {
     @Override
     public void setSocketFactory(SocketFactory socketFactory) {
         this.socketFactory = socketFactory;
+    }
+
+    private ServerSocketFactory serverSocketFactory;
+
+    @Override
+    public void setServerSocketFactory(ServerSocketFactory serverSocketFactory) {
+        this.serverSocketFactory = serverSocketFactory;
     }
 
     private boolean canStop;
