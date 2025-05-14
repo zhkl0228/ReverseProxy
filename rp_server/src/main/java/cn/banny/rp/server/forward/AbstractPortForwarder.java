@@ -3,8 +3,12 @@ package cn.banny.rp.server.forward;
 import cn.banny.rp.forward.PortForwarder;
 import cn.banny.rp.forward.RouteForwarder;
 import cn.banny.rp.server.AbstractRoute;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,15 +18,23 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class AbstractPortForwarder extends ForwarderAware implements PortForwarder {
 
-	final int inPort;
+	private static final Logger log = LoggerFactory.getLogger(AbstractPortForwarder.class);
+
+	private final boolean bindLocal;
+	private final int inPort;
 	final String outHost;
 	final int outPort;
 	protected final AbstractRoute route;
 	
 	final Map<Integer, RouteForwarder> forwards = new ConcurrentHashMap<>();
 
-	AbstractPortForwarder(int inPort, String outHost, int outPort, AbstractRoute route) {
+	final InetSocketAddress createBindAddress() {
+		return bindLocal ? new InetSocketAddress("127.0.0.1", inPort) : new InetSocketAddress(inPort);
+	}
+
+	AbstractPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {
 		super();
+		this.bindLocal = bindLocal;
 		this.inPort = inPort;
 		this.outHost = outHost;
 		this.outPort = outPort;
@@ -62,7 +74,9 @@ public abstract class AbstractPortForwarder extends ForwarderAware implements Po
 	 */
 	@Override
 	public final void notifyForwarderClosed(RouteForwarder forwarder) {
-		forwards.remove(forwarder.hashCode());
+		try (RouteForwarder removed = forwards.remove(forwarder.hashCode())) {
+			log.debug("notifyForwarderClosed: removed={}", removed);
+		} catch(IOException ignored) {}
 	}
 
 	/* (non-Javadoc)

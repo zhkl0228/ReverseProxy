@@ -49,8 +49,8 @@ public interface ReverseProxyClient extends MessageDeliver {
 
 	/**
 	 * 请求端口转向
-	 * @param remotePort 远程绑定端口
-	 * @param host 远端主机
+	 * @param remotePort 远程绑定端口，0 表示随机分配可用端口
+	 * @param host 远端主机 空字符串表示 localhost，并且远端绑定端口在 127.0.0.1
 	 * @param port 远端端口
 	 */
 	void requestForward(int remotePort, String host, int port);

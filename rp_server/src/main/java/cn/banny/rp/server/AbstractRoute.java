@@ -183,7 +183,7 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	private final List<PortForwarder> forwarders = new ArrayList<>();
 
 	@Override
-	public int startForward(int port, String remoteHost, int remotePort)
+	public int startForward(boolean bindLocal, int port, String remoteHost, int remotePort)
 			throws IOException {
 		if(remoteHost == null ||
                 remoteHost.trim().isEmpty() ||
@@ -191,7 +191,7 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 			throw new IllegalArgumentException();
 		}
 		
-		PortForwarder forwarder = startForward(port, remoteHost, remotePort, this);
+		PortForwarder forwarder = startForward(bindLocal, port, remoteHost, remotePort, this);
 		int bindPort;
 		try {
 			bindPort = forwarder.start();
@@ -216,9 +216,9 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	 * @param route the route
 	 * @return 端口转向
 	 */
-	private PortForwarder startForward(int port, String remoteHost,
+	private PortForwarder startForward(boolean bindLocal, int port, String remoteHost,
 			int remotePort, AbstractRoute route) {
-		return new BIOPortForwarder(port, remoteHost, remotePort, route);
+		return new BIOPortForwarder(bindLocal, port, remoteHost, remotePort, route);
 	}
 
 	@Override

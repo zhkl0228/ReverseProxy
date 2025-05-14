@@ -9,7 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,8 +18,8 @@ public class BIOPortForwarder extends AbstractPortForwarder implements PortForwa
 
     private static final Logger log = LoggerFactory.getLogger(BIOPortForwarder.class);
 
-    public BIOPortForwarder(int inPort, String outHost, int outPort, AbstractRoute route) {
-        super(inPort, outHost, outPort, route);
+    public BIOPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {
+        super(bindLocal, inPort, outHost, outPort, route);
     }
 
     private boolean canStop;
@@ -31,7 +32,7 @@ public class BIOPortForwarder extends AbstractPortForwarder implements PortForwa
 
         canStop = false;
         serverSocket = new ServerSocket();
-        serverSocket.bind(new InetSocketAddress(inPort));
+        serverSocket.bind(createBindAddress());
         serverSocket.setReuseAddress(true);
 
         newThread(this).start();

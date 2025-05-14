@@ -62,7 +62,7 @@ public interface Route extends MessageDeliver, RouteContext {
 	 * @throws IOException 异常
 	 * @return 端口转发绑定的端口
 	 */
-	int startForward(int port, String remoteHost, int remotePort) throws IOException;
+	int startForward(boolean bindLocal, int port, String remoteHost, int remotePort) throws IOException;
 
 	/**
 	 * @return 客户端版本号

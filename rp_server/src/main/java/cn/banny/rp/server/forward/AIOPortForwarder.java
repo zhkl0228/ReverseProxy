@@ -25,8 +25,8 @@ public class AIOPortForwarder extends AbstractPortForwarder implements PortForwa
 	
 	private static final Logger log = LoggerFactory.getLogger(AIOPortForwarder.class);
 
-	public AIOPortForwarder(int inPort, String outHost, int outPort, AbstractRoute route) {
-		super(inPort, outHost, outPort, route);
+	public AIOPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {
+		super(bindLocal, inPort, outHost, outPort, route);
 	}
 	
 	private AsynchronousChannelGroup channelGroup;
@@ -40,7 +40,7 @@ public class AIOPortForwarder extends AbstractPortForwarder implements PortForwa
 		channelGroup = AsynchronousChannelGroup.withThreadPool(Executors.newCachedThreadPool(this));
 		server = AsynchronousServerSocketChannel.open(channelGroup);
 		server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-		server.bind(new InetSocketAddress(inPort));
+		server.bind(createBindAddress());
 		server.accept(null, new CompletionHandler<AsynchronousSocketChannel, Void>() {
 			@Override
 			public void completed(AsynchronousSocketChannel result,

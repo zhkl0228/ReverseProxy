@@ -128,6 +128,11 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 	private void parseRequestForward(ByteBuffer in, AbstractRoute route) throws IOException {
 		int port = in.getShort() & 0xffff;
 		String remoteHost = ReverseProxy.readUTF(in);
+		boolean bindLocal = false;
+		if (ReverseProxy.isEmpty(remoteHost)) {
+			remoteHost = "localhost";
+			bindLocal = true;
+		}
 		int remotePort = in.getShort() & 0xffff;
 		IOException exception = null;
 		try {
@@ -136,7 +141,7 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 				throw new IOException("Port forward NOT enabled!");
 			}
 			
-			port = route.startForward(port, remoteHost, remotePort);
+			port = route.startForward(bindLocal, port, remoteHost, remotePort);
 		} catch(IOException e) {
 			exception = e;
 		}

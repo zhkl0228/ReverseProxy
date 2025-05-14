@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 
@@ -29,8 +28,8 @@ public class NIOPortForwarder extends AbstractPortForwarder implements
 	private Selector selector;
 	private ServerSocketChannel server;
 
-	public NIOPortForwarder(int inPort, String outHost, int outPort, AbstractRoute route) {
-		super(inPort, outHost, outPort, route);
+	public NIOPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {
+		super(bindLocal, inPort, outHost, outPort, route);
 	}
 	
 	private NIOSocketSessionDispatcher dispatcher;
@@ -43,7 +42,7 @@ public class NIOPortForwarder extends AbstractPortForwarder implements
 		canStop = false;
 		selector = Selector.open();
 		server = ServerSocketChannel.open();
-		server.bind(new InetSocketAddress(inPort));
+		server.bind(createBindAddress());
 		server.socket().setReuseAddress(true);
 		server.configureBlocking(false);
 		server.register(selector, SelectionKey.OP_ACCEPT, this);

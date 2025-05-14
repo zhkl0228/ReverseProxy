@@ -140,7 +140,7 @@ public class ReverseProxyServerTest {
 				if("bind".equalsIgnoreCase(line) &&
 						route != null) {
 					try {
-						route.startForward(8888, "scp66.3322.org", 31000);
+						route.startForward(true, 8888, "scp66.3322.org", 31000);
 					} catch(IOException e) {
 						e.printStackTrace(System.err);
 					}

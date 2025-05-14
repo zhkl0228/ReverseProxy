@@ -446,9 +446,6 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		requestForward(0, host, port);
 	}
 
-	/* (non-Javadoc)
-         * @see cn.banny.rp.client.ReverseProxyClient#requestForward(int, java.lang.String, int)
-         */
 	@Override
 	public final void requestForward(int remotePort, String host, int port) {
 		PortForwardRequest forwardRequest = new PortForwardRequest(remotePort, host, port);
