@@ -29,7 +29,7 @@ public abstract class AbstractPortForwarder extends ForwarderAware implements Po
 	final Map<Integer, RouteForwarder> forwards = new ConcurrentHashMap<>();
 
 	final InetSocketAddress createBindAddress() {
-		return bindLocal ? new InetSocketAddress("127.0.0.1", inPort) : new InetSocketAddress(inPort);
+		return bindLocal ? new InetSocketAddress(InetAddress.getLoopbackAddress(), inPort) : new InetSocketAddress(inPort);
 	}
 
 	AbstractPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {

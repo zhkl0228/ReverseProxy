@@ -26,8 +26,8 @@ public class SocksHandler implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(SocksHandler.class);
 
-    private static final int CONNECT_TIMEOUT = 20000;
-    private static final int SO_TIMEOUT = 60000;
+    private static final int CONNECT_TIMEOUT = 30000;
+    private static final int SO_TIMEOUT = 600000;
 
     private final ExecutorService executorService;
     private final Socket socket;

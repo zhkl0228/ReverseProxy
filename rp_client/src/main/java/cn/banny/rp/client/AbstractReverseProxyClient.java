@@ -494,8 +494,6 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 				client = new Socket();
 				if (readTimeoutInMillis > 0) {
 					client.setSoTimeout(readTimeoutInMillis);
-				} else {
-					client.setSoTimeout(connectTimeoutInMillis > 0 ? connectTimeoutInMillis + 5000 : 60000);
 				}
 				if (connectTimeoutInMillis > 0) {
 					client.connect(new InetSocketAddress(host, port), connectTimeoutInMillis);
@@ -506,8 +504,6 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 				server = new Socket();
 				if (readTimeoutInMillis > 0) {
 					server.setSoTimeout(readTimeoutInMillis);
-				} else {
-					server.setSoTimeout(connectTimeoutInMillis > 0 ? connectTimeoutInMillis + 5000 : 30000);
 				}
 				if (connectTimeoutInMillis > 0) {
 					server.connect(new InetSocketAddress(serverHost, listenPort), connectTimeoutInMillis);
