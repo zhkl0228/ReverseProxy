@@ -21,7 +21,7 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
 
     private static final Logger log = LoggerFactory.getLogger(BIORouteForwarder.class);
 
-    private final Socket socket;
+    private Socket socket;
     private final ForwarderListener forwarderListener;
     private final ExecutorService executorService;
 
@@ -55,6 +55,7 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
             ShutdownListener listener = new SocksShutdownListener(null);
             executorService.submit(new StreamPipe(this.socket, this.socket.getInputStream(), socket, socket.getOutputStream(), listener));
             executorService.submit(new StreamPipe(socket, socket.getInputStream(), this.socket, this.socket.getOutputStream(), listener));
+            this.socket = null;
         } catch (IOException e) {
             log.debug("Channel server socket accept failed: listenPort={}", serverSocket.getLocalPort(), e);
             close();
