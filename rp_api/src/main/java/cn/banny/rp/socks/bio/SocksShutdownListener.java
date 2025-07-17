@@ -1,6 +1,6 @@
 package cn.banny.rp.socks.bio;
 
-import org.apache.commons.io.IOUtils;
+import cn.banny.rp.ReverseProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +30,7 @@ public class SocksShutdownListener implements ShutdownListener {
     public synchronized void onShutdownInput(Socket socket) {
         if (socket == out) {
             log.debug("onShutdownInput close socket: {}", socket);
-            IOUtils.closeQuietly(socket);
+            ReverseProxy.closeQuietly(socket);
         } else {
             in = socket;
         }
@@ -40,7 +40,7 @@ public class SocksShutdownListener implements ShutdownListener {
     public synchronized void onShutdownOutput(Socket socket) {
         if (socket == in) {
             log.debug("onShutdownOutput close socket: {}", socket);
-            IOUtils.closeQuietly(socket);
+            ReverseProxy.closeQuietly(socket);
         } else {
             out = socket;
         }

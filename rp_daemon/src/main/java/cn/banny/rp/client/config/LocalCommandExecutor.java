@@ -25,7 +25,7 @@ public class LocalCommandExecutor implements CommandExecutor {
 	
 	public String[] execute() throws IOException {
 		StreamExtractHandler handler = new StreamExtractHandler();
-		Executor executor = new DefaultExecutor();
+		Executor executor = DefaultExecutor.builder().get();
 		executor.setStreamHandler(handler);
 		int exitValue = executor.execute(command);
 		if(executor.isFailure(exitValue)) {

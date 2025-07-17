@@ -1,17 +1,12 @@
 package cn.banny.rp.socks.bio;
 
+import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.socks.SocketFactory;
 import cn.banny.rp.socks.SocketType;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -57,9 +52,9 @@ public class SocksHandler implements Runnable {
         } catch (IOException e) {
             log.debug(e.getMessage(), e);
 
-            IOUtils.closeQuietly(inputStream);
-            IOUtils.closeQuietly(outputStream);
-            IOUtils.closeQuietly(socket);
+            ReverseProxy.closeQuietly(inputStream);
+            ReverseProxy.closeQuietly(outputStream);
+            ReverseProxy.closeQuietly(socket);
         }
     }
 
@@ -88,7 +83,7 @@ public class SocksHandler implements Runnable {
             socket.connect(address, CONNECT_TIMEOUT);
             return socket;
         } catch (IOException e) {
-            IOUtils.close(socket);
+            ReverseProxy.closeQuietly(socket);
             throw e;
         }
     }

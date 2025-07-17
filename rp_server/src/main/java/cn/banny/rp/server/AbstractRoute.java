@@ -1,33 +1,20 @@
 package cn.banny.rp.server;
 
-import cn.banny.rp.AbstractRouteContext;
-import cn.banny.rp.ReverseProxy;
-import cn.banny.rp.ReverseProxyReceiver;
-import cn.banny.rp.Route;
-import cn.banny.rp.Traffic;
+import cn.banny.rp.*;
 import cn.banny.rp.auth.Auth;
 import cn.banny.rp.auth.AuthHandler;
 import cn.banny.rp.forward.PortForwarder;
 import cn.banny.rp.server.forward.BIOPortForwarder;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
@@ -104,7 +91,7 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	void setDeviceData(byte[] deviceData) {
 		try (InputStream inputStream = new ByteArrayInputStream(deviceData);
 			 InputStream gzip = new GZIPInputStream(inputStream)) {
-			deviceInfo = IOUtils.toString(gzip, StandardCharsets.UTF_8);
+			deviceInfo = ReverseProxy.toString(gzip, StandardCharsets.UTF_8);
 		} catch (Throwable t) {
 			log.warn("setDeviceData", t);
 		}

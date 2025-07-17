@@ -56,6 +56,7 @@ public interface Route extends MessageDeliver, RouteContext {
 
 	/**
 	 * 端口转发
+	 * @param bindLocal bind locally
 	 * @param port 服务器监听端口
 	 * @param remoteHost 转发的主机
 	 * @param remotePort 转发的主机端口

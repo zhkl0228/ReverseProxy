@@ -1,6 +1,6 @@
 package cn.banny.rp.server;
 
-import org.apache.commons.io.IOUtils;
+import cn.banny.rp.ReverseProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,7 @@ public class ProxyPipedInputStream extends InputStream {
         log.debug("close");
         try {
             closeRequested = true;
-            queue.put(IOUtils.EOF);
+            queue.put(ReverseProxy.EOF);
         } catch (InterruptedException e) {
             throw new IOException("close", e);
         }
@@ -84,7 +84,7 @@ public class ProxyPipedInputStream extends InputStream {
             try {
                 Integer b = queue.poll(soTimeout < 1 ? 1000 : soTimeout, TimeUnit.MILLISECONDS);
                 if (b != null) {
-                    if (b == IOUtils.EOF) {
+                    if (b == ReverseProxy.EOF) {
                         eof = true;
                     }
                     return b;

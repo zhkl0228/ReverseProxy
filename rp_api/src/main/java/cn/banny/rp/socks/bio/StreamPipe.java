@@ -1,6 +1,6 @@
 package cn.banny.rp.socks.bio;
 
-import org.apache.commons.io.IOUtils;
+import cn.banny.rp.ReverseProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +39,8 @@ public class StreamPipe implements Runnable {
         } catch (IOException e) {
             log.debug(e.getMessage(), e);
         } finally {
-            IOUtils.closeQuietly(inputStream);
-            IOUtils.closeQuietly(outputStream);
+            ReverseProxy.closeQuietly(inputStream);
+            ReverseProxy.closeQuietly(outputStream);
             try { in.shutdownInput(); } catch(IOException ignored) {}
             shutdownListener.onShutdownInput(in);
             try { out.shutdownOutput(); } catch(IOException ignored) {}

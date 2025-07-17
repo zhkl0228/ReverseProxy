@@ -1,9 +1,9 @@
 package cn.banny.rp.socks.bio;
 
+import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.socks.ServerSocketFactory;
 import cn.banny.rp.socks.SocketFactory;
 import cn.banny.rp.socks.SocksServer;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +82,7 @@ public class BIOSocksServer implements SocksServer, Runnable, ThreadFactory {
             try {
                 Socket socket = serverSocket.accept();
                 if (!active) { // 没有启用
-                    IOUtils.closeQuietly(socket);
+                    ReverseProxy.closeQuietly(socket);
                     continue;
                 }
 
@@ -96,7 +96,7 @@ public class BIOSocksServer implements SocksServer, Runnable, ThreadFactory {
     @Override
     public void stopSilent() {
         canStop = true;
-        IOUtils.closeQuietly(serverSocket);
+        ReverseProxy.closeQuietly(serverSocket);
         executorService.shutdown();
     }
 

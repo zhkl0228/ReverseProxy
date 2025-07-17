@@ -1,7 +1,11 @@
 package cn.banny.rp;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Date;
@@ -11,6 +15,23 @@ import java.util.Date;
  *
  */
 public class ReverseProxy {
+
+	/**
+	 * Represents the end-of-file (or stream) value {@value}.
+	 * @since 2.5 (made public)
+	 */
+	public static final int EOF = -1;
+
+	public static String toString(InputStream inputStream, Charset charset) throws IOException {
+		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			byte[] buffer = new byte[1024];
+			int read;
+			while((read = inputStream.read(buffer)) != ReverseProxy.EOF) {
+				baos.write(buffer, 0, read);
+			}
+			return baos.toString(charset.name());
+		}
+	}
 	
 	public static void closeQuietly(Closeable closeable) {
 		if(closeable == null) {

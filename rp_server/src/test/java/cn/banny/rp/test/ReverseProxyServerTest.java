@@ -9,7 +9,6 @@ import cn.banny.rp.server.mina.MinaReverseProxyServer;
 import cn.banny.rp.server.mina.MinaServerHandler;
 import cn.banny.rp.server.socks.AbstractProxyServer;
 import cn.banny.rp.server.socks.NIOProxyServer;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
@@ -35,12 +34,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.InetSocketAddress;
-import java.net.PasswordAuthentication;
-import java.net.Proxy;
+import java.net.*;
 import java.net.Proxy.Type;
-import java.net.Socket;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -349,12 +345,12 @@ public class ReverseProxyServerTest {
 			org.apache.http.HttpResponse response = client.execute(get);
 			HttpEntity entity = response.getEntity();
 			inputStream = entity.getContent();
-			System.out.println(IOUtils.toString(inputStream, "GBK"));
+			System.out.println(ReverseProxy.toString(inputStream, Charset.forName("GBK")));
 			System.out.println("offset=" + (System.currentTimeMillis() - start));
 		} catch (IOException e) {
 			e.printStackTrace(System.err);
 		} finally {
-			IOUtils.closeQuietly(inputStream);
+			ReverseProxy.closeQuietly(inputStream);
 			get.releaseConnection();
 		}
 	}
@@ -368,13 +364,13 @@ public class ReverseProxyServerTest {
 			org.apache.http.HttpResponse response = client.execute(get);
 			HttpEntity entity = response.getEntity();
 			inputStream = entity.getContent();
-			String str = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+			String str = ReverseProxy.toString(inputStream, StandardCharsets.UTF_8);
             System.out.println(str);
             System.out.println("offset=" + (System.currentTimeMillis() - start));
 		} catch (IOException e) {
 			e.printStackTrace(System.err);
 		} finally {
-			IOUtils.closeQuietly(inputStream);
+			ReverseProxy.closeQuietly(inputStream);
 			get.releaseConnection();
 		}
 	}
@@ -390,13 +386,13 @@ public class ReverseProxyServerTest {
 			HttpEntity entity = response.getEntity();
 			if(entity != null) {
 				inputStream = entity.getContent();
-				System.out.println(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+				System.out.println(ReverseProxy.toString(inputStream, StandardCharsets.UTF_8));
 			}
 			System.out.println("offset=" + (System.currentTimeMillis() - start) + ", lbs=" + route.getLbs());
 		} catch (IOException e) {
 			e.printStackTrace(System.err);
 		} finally {
-			IOUtils.closeQuietly(inputStream);
+			ReverseProxy.closeQuietly(inputStream);
 			get.releaseConnection();
 		}
 	}
@@ -410,12 +406,12 @@ public class ReverseProxyServerTest {
 			org.apache.http.HttpResponse response = client.execute(get);
 			HttpEntity entity = response.getEntity();
 			inputStream = entity.getContent();
-			System.out.println(IOUtils.toString(inputStream, "GBK"));
+			System.out.println(ReverseProxy.toString(inputStream, Charset.forName("GBK")));
 			System.out.println("offset=" + (System.currentTimeMillis() - start));
 		} catch (IOException e) {
 			e.printStackTrace(System.err);
 		} finally {
-			IOUtils.closeQuietly(inputStream);
+			ReverseProxy.closeQuietly(inputStream);
 			get.releaseConnection();
 		}
 	}
