@@ -33,18 +33,21 @@ public class StreamPipe implements Runnable {
             shutdownListener.onStreamStart();
             byte[] buf = new byte[in.getReceiveBufferSize()];
             int read;
-            while ((read = inputStream.read(buf)) > 0) {
+            while ((read = inputStream.read(buf)) != ReverseProxy.EOF) {
                 outputStream.write(buf, 0, read);
             }
         } catch (IOException e) {
-            log.debug(e.getMessage(), e);
+            log.debug("stream failed: in={}, out={}", in, out, e);
         } finally {
-            ReverseProxy.closeQuietly(inputStream);
-            ReverseProxy.closeQuietly(outputStream);
+            if (shutdownListener.needShutdown()) {
+                ReverseProxy.closeQuietly(inputStream);
+                ReverseProxy.closeQuietly(outputStream);
+            }
             try { in.shutdownInput(); } catch(IOException ignored) {}
             shutdownListener.onShutdownInput(in);
             try { out.shutdownOutput(); } catch(IOException ignored) {}
             shutdownListener.onShutdownOutput(out);
+            shutdownListener.onStreamEnd();
         }
     }
 

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.Socket;
 
+@Deprecated
 public class SocksShutdownListener implements ShutdownListener {
 
     private static final Logger log = LoggerFactory.getLogger(SocksShutdownListener.class);
@@ -24,6 +25,15 @@ public class SocksShutdownListener implements ShutdownListener {
             Thread thread = Thread.currentThread();
             thread.setName(threadName);
         }
+    }
+
+    @Override
+    public boolean needShutdown() {
+        return true;
+    }
+
+    @Override
+    public void onStreamEnd() {
     }
 
     @Override

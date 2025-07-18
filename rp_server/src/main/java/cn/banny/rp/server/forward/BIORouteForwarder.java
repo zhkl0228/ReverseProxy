@@ -4,13 +4,14 @@ import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.forward.ForwarderListener;
 import cn.banny.rp.forward.RouteForwarder;
 import cn.banny.rp.server.AbstractRoute;
-import cn.banny.rp.socks.bio.ShutdownListener;
-import cn.banny.rp.socks.bio.SocksShutdownListener;
+import cn.banny.rp.socks.bio.CountDownShutdownListener;
 import cn.banny.rp.socks.bio.StreamPipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -21,7 +22,7 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
 
     private static final Logger log = LoggerFactory.getLogger(BIORouteForwarder.class);
 
-    private Socket socket;
+    private final Socket socket;
     private final ForwarderListener forwarderListener;
     private final ExecutorService executorService;
 
@@ -46,18 +47,22 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
 
     @Override
     public void run() {
-        try {
-            log.debug("start accept channel socket on port: {}", serverSocket.getLocalPort());
-            Socket socket = serverSocket.accept();
+        log.debug("start accept channel socket on port: {}", serverSocket.getLocalPort());
+        try (Socket socket = serverSocket.accept()) {
             ReverseProxy.closeQuietly(serverSocket);
             serverSocket = null;
-
-            ShutdownListener listener = new SocksShutdownListener(null);
-            executorService.submit(new StreamPipe(this.socket, this.socket.getInputStream(), socket, socket.getOutputStream(), listener));
-            executorService.submit(new StreamPipe(socket, socket.getInputStream(), this.socket, this.socket.getOutputStream(), listener));
-            this.socket = null;
-        } catch (IOException e) {
+            try (InputStream serverIn = this.socket.getInputStream();
+                 OutputStream serverOut = this.socket.getOutputStream();
+                 InputStream clientIn = socket.getInputStream();
+                 OutputStream clientOut = socket.getOutputStream()) {
+                CountDownShutdownListener listener = new CountDownShutdownListener();
+                executorService.submit(new StreamPipe(this.socket, serverIn, socket, clientOut, listener));
+                executorService.submit(new StreamPipe(socket, clientIn, this.socket, serverOut, listener));
+                listener.waitCountDown();
+            }
+        } catch (IOException | InterruptedException e) {
             log.debug("Channel server socket accept failed: listenPort={}", serverSocket.getLocalPort(), e);
+        } finally {
             close();
         }
     }

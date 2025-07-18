@@ -7,5 +7,7 @@ public interface ShutdownListener {
     void onStreamStart();
     void onShutdownInput(Socket socket);
     void onShutdownOutput(Socket socket);
+    void onStreamEnd();
+    boolean needShutdown();
 
 }

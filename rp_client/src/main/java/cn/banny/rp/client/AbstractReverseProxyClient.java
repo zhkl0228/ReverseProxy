@@ -4,15 +4,12 @@ import cn.banny.rp.RequestConnect;
 import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.auth.AuthResult;
 import cn.banny.rp.handler.ExtDataHandler;
-import cn.banny.rp.socks.bio.ShutdownListener;
-import cn.banny.rp.socks.bio.SocksShutdownListener;
+import cn.banny.rp.socks.bio.CountDownShutdownListener;
 import cn.banny.rp.socks.bio.StreamPipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
@@ -488,12 +485,12 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		private int connectTimeoutInMillis;
 		@Override
 		public void run() {
-			Socket server = null;
-			Socket client = null;
-			try {
-				client = new Socket();
+			try (Socket server = new Socket();
+				 Socket client = new Socket()) {
 				if (readTimeoutInMillis > 0) {
 					client.setSoTimeout(readTimeoutInMillis);
+				} else {
+					client.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
 				}
 				if (connectTimeoutInMillis > 0) {
 					client.connect(new InetSocketAddress(host, port), connectTimeoutInMillis);
@@ -501,9 +498,10 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 					client.connect(new InetSocketAddress(host, port), 60000);
 				}
 
-				server = new Socket();
 				if (readTimeoutInMillis > 0) {
 					server.setSoTimeout(readTimeoutInMillis);
+				} else {
+					server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
 				}
 				if (connectTimeoutInMillis > 0) {
 					server.connect(new InetSocketAddress(serverHost, listenPort), connectTimeoutInMillis);
@@ -511,14 +509,17 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 					server.connect(new InetSocketAddress(serverHost, listenPort), 30000);
 				}
 
-				ShutdownListener listener = new SocksShutdownListener(null);
-				new Thread(new StreamPipe(server, server.getInputStream(), client, client.getOutputStream(), listener)).start();
-				new Thread(new StreamPipe(client, client.getInputStream(), server, server.getOutputStream(), listener)).start();
-			} catch (IOException e) {
+				try (InputStream serverIn = server.getInputStream();
+					 OutputStream serverOut = server.getOutputStream();
+					 InputStream clientIn = client.getInputStream();
+					 OutputStream clientOut = client.getOutputStream()) {
+					CountDownShutdownListener listener = new CountDownShutdownListener();
+					new Thread(new StreamPipe(server, serverIn, client, clientOut, listener)).start();
+					new Thread(new StreamPipe(client, clientIn, server, serverOut, listener)).start();
+					listener.waitCountDown();
+				}
+			} catch (IOException | InterruptedException e) {
 				log.debug("parseStartProxy listenPort={}, host={}, port={}, serverHost={}", listenPort, host, port, serverHost, e);
-
-				ReverseProxy.closeQuietly(server);
-				ReverseProxy.closeQuietly(client);
 			}
 		}
 	}
