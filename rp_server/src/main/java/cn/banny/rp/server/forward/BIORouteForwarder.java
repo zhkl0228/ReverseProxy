@@ -67,8 +67,10 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
             }
         } catch (SocketTimeoutException e) {
             log.warn("Channel server socket accept failed: listenPort={}, socket={}", serverSocket.getLocalPort(), socket, e);
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             log.debug("start forward failed: listenPort={}, socket={}", serverSocket.getLocalPort(), socket, e);
+        } catch (Exception e) {
+            log.warn("start forward failed: listenPort={}, socket={}", serverSocket.getLocalPort(), socket, e);
         } finally {
             close();
         }
