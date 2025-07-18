@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 
@@ -58,8 +59,10 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
                 executorService.submit(new StreamPipe(client, clientIn, server, serverOut, listener));
                 listener.waitCountDown();
             }
+        } catch (SocketTimeoutException e) {
+            log.warn("Channel server socket accept failed: listenPort={}, socket={}", serverSocket.getLocalPort(), socket, e);
         } catch (IOException | InterruptedException e) {
-            log.debug("Channel server socket accept failed: listenPort={}", serverSocket.getLocalPort(), e);
+            log.debug("start forward failed: listenPort={}, socket={}", serverSocket.getLocalPort(), socket, e);
         } finally {
             close();
         }
