@@ -512,6 +512,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			}
 			Thread.currentThread().setName(builder.toString());
 			Socket server = null;
+			Throwable openSocksSocketException = null;
 			try (Socket client = new Socket()) {
 				if (socksOverTls) {
 					try {
@@ -522,7 +523,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 							server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
 						}
 					} catch (Throwable t) {
-						log.info("openSocksSocket failed: {}:{} => {}:{}", serverHost, listenPort, host, port, t);
+						openSocksSocketException = t;
 					}
 				}
 				if (server == null) {
@@ -565,6 +566,9 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 					listener.waitCountDown();
 				}
 			} catch (Exception e) {
+				if (openSocksSocketException != null) {
+					log.info("openSocksSocket failed: {}:{} => {}:{}", serverHost, listenPort, host, port, openSocksSocketException);
+				}
 				log.info("parseStartProxy client={}:{}, server={}:{}", host, port, serverHost, listenPort, e);
 			} finally {
 				ReverseProxy.closeQuietly(server);
