@@ -22,24 +22,20 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
 
     private static final Logger log = LoggerFactory.getLogger(BIORouteForwarder.class);
 
-    private final Socket socket;
+    private Socket socket;
     private final ForwarderListener forwarderListener;
     private final ExecutorService executorService;
 
     private ServerSocket serverSocket;
 
-    BIORouteForwarder(Socket socket, ForwarderListener forwarderListener, AbstractRoute route, String host, int port, ExecutorService executorService) {
+    BIORouteForwarder(Socket socket, ForwarderListener forwarderListener, AbstractRoute route, String host, int port, ExecutorService executorService) throws IOException {
         this.socket = socket;
         this.forwarderListener = forwarderListener;
         this.executorService = executorService;
 
-        try {
-            serverSocket = new ServerSocket();
-            serverSocket.setSoTimeout(30000); // 等待30秒连接超时
-            serverSocket.bind(new InetSocketAddress(0));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        serverSocket = new ServerSocket();
+        serverSocket.setSoTimeout(30000); // 等待30秒连接超时
+        serverSocket.bind(new InetSocketAddress(0));
 
         executorService.submit(this);
         route.sendRequest(createStartProxy(serverSocket.getLocalPort(), host, port));
@@ -48,16 +44,18 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
     @Override
     public void run() {
         log.debug("start accept channel socket on port: {}", serverSocket.getLocalPort());
-        try (Socket socket = serverSocket.accept()) {
+        try (Socket client = serverSocket.accept();
+             Socket server = this.socket) {
+            this.socket = null;
             ReverseProxy.closeQuietly(serverSocket);
             serverSocket = null;
-            try (InputStream serverIn = this.socket.getInputStream();
-                 OutputStream serverOut = this.socket.getOutputStream();
-                 InputStream clientIn = socket.getInputStream();
-                 OutputStream clientOut = socket.getOutputStream()) {
+            try (InputStream serverIn = server.getInputStream();
+                 OutputStream serverOut = server.getOutputStream();
+                 InputStream clientIn = client.getInputStream();
+                 OutputStream clientOut = client.getOutputStream()) {
                 CountDownShutdownListener listener = new CountDownShutdownListener();
-                executorService.submit(new StreamPipe(this.socket, serverIn, socket, clientOut, listener));
-                executorService.submit(new StreamPipe(socket, clientIn, this.socket, serverOut, listener));
+                executorService.submit(new StreamPipe(server, serverIn, client, clientOut, listener));
+                executorService.submit(new StreamPipe(client, clientIn, server, serverOut, listener));
                 listener.waitCountDown();
             }
         } catch (IOException | InterruptedException e) {

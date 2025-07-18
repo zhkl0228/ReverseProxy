@@ -53,21 +53,23 @@ public class BIOPortForwarder extends AbstractPortForwarder implements PortForwa
     @Override
     public void run() {
         while (!canStop) {
+            Socket socket = null;
             try {
-                Socket socket = serverSocket.accept();
+                socket = serverSocket.accept();
                 RouteForwarder forwarder = createForward(socket);
                 forwards.put(forwarder.hashCode(), forwarder);
-            } catch (IOException e) {
+            } catch (Throwable e) {
+                ReverseProxy.closeQuietly(socket);
                 if (canStop) {
-                    log.debug(e.getMessage(), e);
+                    log.debug("createForward", e);
                 } else {
-                    log.warn(e.getMessage(), e);
+                    log.warn("createForward", e);
                 }
             }
         }
     }
 
-    private RouteForwarder createForward(Socket socket) {
+    private RouteForwarder createForward(Socket socket) throws IOException {
         return new BIORouteForwarder(socket, this, route, outHost, outPort, executorService);
     }
 

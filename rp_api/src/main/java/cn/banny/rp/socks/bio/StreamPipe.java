@@ -36,6 +36,7 @@ public class StreamPipe implements Runnable {
             while ((read = inputStream.read(buf)) != ReverseProxy.EOF) {
                 outputStream.write(buf, 0, read);
             }
+            outputStream.flush();
         } catch (IOException e) {
             log.debug("stream failed: in={}, out={}", in, out, e);
         } finally {
