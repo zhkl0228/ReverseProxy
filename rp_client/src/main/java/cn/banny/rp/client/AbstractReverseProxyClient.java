@@ -3,6 +3,7 @@ package cn.banny.rp.client;
 import cn.banny.rp.RequestConnect;
 import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.auth.AuthResult;
+import cn.banny.rp.client.ssl.SocksOverTls;
 import cn.banny.rp.handler.ExtDataHandler;
 import cn.banny.rp.socks.bio.CountDownShutdownListener;
 import cn.banny.rp.socks.bio.StreamPipe;
@@ -304,6 +305,9 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			case 0x1a:
 				parseStartProxy(packet);
 				break;
+			case 0x1c:
+				parseStartNewProxy(packet);
+				break;
 			case 0x1b:
 				parseForwardSocket(packet);
 				break;
@@ -475,18 +479,20 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		private final int listenPort;
 		private final String host;
 		private final int port;
-		ProxyStarter(String serverHost, int listenPort, String host, int port) {
+		private final byte[] uuid;
+		ProxyStarter(String serverHost, int listenPort, String host, int port, byte[] uuid) {
 			this.serverHost = serverHost;
 			this.listenPort = listenPort;
 			this.host = host;
 			this.port = port;
+			this.uuid = uuid;
 		}
 		private int readTimeoutInMillis;
 		private int connectTimeoutInMillis;
 		@Override
 		public void run() {
 			DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
-			StringBuilder builder = new StringBuilder(dateFormat.format(new Date())).append("ProxyStarter => ");
+			StringBuilder builder = new StringBuilder(dateFormat.format(new Date())).append("ProxyStarter ");
 			builder.append(serverHost).append(":").append(listenPort).append(" => ").append(host).append(":").append(port);
 			if (connectTimeoutInMillis > 0) {
 				builder.append(" with connectTimeout=").append(connectTimeoutInMillis);
@@ -495,23 +501,38 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 				builder.append(" with readTimeout=").append(readTimeoutInMillis);
 			}
 			Thread.currentThread().setName(builder.toString());
-			try (Socket server = new Socket();
-				 Socket client = new Socket()) {
-				if (readTimeoutInMillis > 0) {
-					server.setSoTimeout(readTimeoutInMillis);
-				} else {
-					server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
+			Socket server = null;
+			try (Socket client = new Socket()) {
+				if (port == 8888) {
+					try {
+						server = SocksOverTls.openSocksSocket(serverHost, listenPort, 25000);
+						if (readTimeoutInMillis > 0) {
+							server.setSoTimeout(readTimeoutInMillis);
+						} else {
+							server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
+						}
+					} catch (Throwable t) {
+						log.warn("openSocksSocket failed: {}:{}", serverHost, listenPort, t);
+					}
 				}
+				if (server == null) {
+					server = new Socket();
+					if (readTimeoutInMillis > 0) {
+						server.setSoTimeout(readTimeoutInMillis);
+					} else {
+						server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
+					}
+					if (connectTimeoutInMillis > 0) {
+						server.connect(new InetSocketAddress(serverHost, listenPort), connectTimeoutInMillis);
+					} else {
+						server.connect(new InetSocketAddress(serverHost, listenPort), 25000);
+					}
+				}
+
 				if (readTimeoutInMillis > 0) {
 					client.setSoTimeout(readTimeoutInMillis);
 				} else {
 					client.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
-				}
-
-				if (connectTimeoutInMillis > 0) {
-					server.connect(new InetSocketAddress(serverHost, listenPort), connectTimeoutInMillis);
-				} else {
-					server.connect(new InetSocketAddress(serverHost, listenPort), 25000);
 				}
 
 				if (connectTimeoutInMillis > 0) {
@@ -523,14 +544,20 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 					 OutputStream serverOut = server.getOutputStream();
 					 InputStream clientIn = client.getInputStream();
 					 OutputStream clientOut = client.getOutputStream()) {
+					if (uuid != null) {
+						serverOut.write(uuid);
+						serverOut.flush();
+					}
 					CountDownShutdownListener listener = new CountDownShutdownListener(null);
 					String threadName = builder.toString();
 					new Thread(new StreamPipe(server, serverIn, client, clientOut, listener), threadName).start();
 					new Thread(new StreamPipe(client, clientIn, server, serverOut, listener), threadName).start();
 					listener.waitCountDown();
 				}
-			} catch (IOException | InterruptedException e) {
+			} catch (Exception e) {
 				log.info("parseStartProxy client={}:{}, server={}:{}", host, port, serverHost, listenPort, e);
+			} finally {
+				ReverseProxy.closeQuietly(server);
 			}
 		}
 	}
@@ -542,7 +569,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		int readTimeoutInMillis = in.getInt();
 		int connectTimeoutInMillis = in.getInt();
 
-		ProxyStarter proxyStarter = new ProxyStarter(this.host, listenPort, host, port);
+		ProxyStarter proxyStarter = new ProxyStarter(this.host, listenPort, host, port, null);
 		proxyStarter.readTimeoutInMillis = readTimeoutInMillis;
 		proxyStarter.connectTimeoutInMillis = connectTimeoutInMillis;
 		new Thread(proxyStarter).start();
@@ -553,7 +580,17 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		String host = ReverseProxy.readUTF(in);
 		int port = in.getShort() & 0xffff;
 
-		new Thread(new ProxyStarter(this.host, listenPort, host, port)).start();
+		new Thread(new ProxyStarter(this.host, listenPort, host, port, null)).start();
+	}
+
+	private void parseStartNewProxy(ByteBuffer in) throws IOException {
+		int listenPort = in.getShort() & 0xffff;
+		String host = ReverseProxy.readUTF(in);
+		int port = in.getShort() & 0xffff;
+		byte[] uuid=  new byte[16];
+		in.get(uuid);
+
+		new Thread(new ProxyStarter(this.host, listenPort, host, port, uuid)).start();
 	}
 
 	private final Map<Integer, PortForwardRequest> portForwardMap = new ConcurrentHashMap<>();

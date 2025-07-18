@@ -9,7 +9,8 @@ public enum PortForwarderType implements ForwarderType {
 
     BIO,
     NIO,
-    AIO;
+    AIO,
+    NewBIO;
 
     @Deprecated
     public PortForwarder startForward(boolean bindLocal, int port, String remoteHost,
@@ -21,6 +22,8 @@ public enum PortForwarderType implements ForwarderType {
                 return new NIOPortForwarder(bindLocal, port, remoteHost, remotePort, (AbstractRoute) route);
             case AIO:
                 return new AIOPortForwarder(bindLocal, port, remoteHost, remotePort, (AbstractRoute) route);
+            case NewBIO:
+                return new NewBIOPortForwarder(bindLocal, port, remoteHost, remotePort, (AbstractRoute) route);
             default:
                 throw new UnsupportedOperationException("type=" + this);
         }

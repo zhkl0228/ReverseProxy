@@ -139,6 +139,7 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 				case "0":
 				case "1":
 				case "2":
+				case "3":
 					type = PortForwarderType.values()[Integer.parseInt(remoteHost)];
 					remoteHost = "localhost";
 					bindLocal = true;
