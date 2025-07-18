@@ -515,14 +515,14 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			try (Socket client = new Socket()) {
 				if (socksOverTls) {
 					try {
-						server = SocksOverTls.openSocksSocket(serverHost, listenPort, 25000);
+						server = SocksOverTls.openSocksSocket(serverHost, listenPort, 10000);
 						if (readTimeoutInMillis > 0) {
 							server.setSoTimeout(readTimeoutInMillis);
 						} else {
 							server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
 						}
 					} catch (Throwable t) {
-						log.warn("openSocksSocket failed: {}:{}", serverHost, listenPort, t);
+						log.info("openSocksSocket failed: {}:{} => {}:{}", serverHost, listenPort, host, port, t);
 					}
 				}
 				if (server == null) {
@@ -535,7 +535,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 					if (connectTimeoutInMillis > 0) {
 						server.connect(new InetSocketAddress(serverHost, listenPort), connectTimeoutInMillis);
 					} else {
-						server.connect(new InetSocketAddress(serverHost, listenPort), 25000);
+						server.connect(new InetSocketAddress(serverHost, listenPort), 15000);
 					}
 				}
 
