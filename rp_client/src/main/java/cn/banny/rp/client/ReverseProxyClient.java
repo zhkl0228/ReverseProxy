@@ -21,6 +21,8 @@ public interface ReverseProxyClient extends MessageDeliver {
 
 	void login(String username, String password, int aliveTimeMillis);
 
+	void enableSocksOverTls();
+
 	void logout();
 
 	void disconnect();

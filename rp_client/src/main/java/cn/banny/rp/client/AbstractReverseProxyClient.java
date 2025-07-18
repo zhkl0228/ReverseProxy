@@ -58,6 +58,13 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		this.writeBuffer.order(ByteOrder.BIG_ENDIAN);
 	}
 
+	private boolean socksOverTls;
+
+	@Override
+	public void enableSocksOverTls() {
+		this.socksOverTls = true;
+	}
+
 	private String lbs, lastSyncLbs;
 
 	@Override
@@ -480,12 +487,15 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		private final String host;
 		private final int port;
 		private final byte[] uuid;
-		ProxyStarter(String serverHost, int listenPort, String host, int port, byte[] uuid) {
+		private final boolean socksOverTls;
+		ProxyStarter(String serverHost, int listenPort, String host, int port, byte[] uuid,
+					 boolean socksOverTls) {
 			this.serverHost = serverHost;
 			this.listenPort = listenPort;
 			this.host = host;
 			this.port = port;
 			this.uuid = uuid;
+			this.socksOverTls = socksOverTls;
 		}
 		private int readTimeoutInMillis;
 		private int connectTimeoutInMillis;
@@ -503,7 +513,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			Thread.currentThread().setName(builder.toString());
 			Socket server = null;
 			try (Socket client = new Socket()) {
-				if (port == 8888) {
+				if (socksOverTls) {
 					try {
 						server = SocksOverTls.openSocksSocket(serverHost, listenPort, 25000);
 						if (readTimeoutInMillis > 0) {
@@ -569,7 +579,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		int readTimeoutInMillis = in.getInt();
 		int connectTimeoutInMillis = in.getInt();
 
-		ProxyStarter proxyStarter = new ProxyStarter(this.host, listenPort, host, port, null);
+		ProxyStarter proxyStarter = new ProxyStarter(this.host, listenPort, host, port, null, socksOverTls);
 		proxyStarter.readTimeoutInMillis = readTimeoutInMillis;
 		proxyStarter.connectTimeoutInMillis = connectTimeoutInMillis;
 		new Thread(proxyStarter).start();
@@ -580,7 +590,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		String host = ReverseProxy.readUTF(in);
 		int port = in.getShort() & 0xffff;
 
-		new Thread(new ProxyStarter(this.host, listenPort, host, port, null)).start();
+		new Thread(new ProxyStarter(this.host, listenPort, host, port, null, socksOverTls)).start();
 	}
 
 	private void parseStartNewProxy(ByteBuffer in) throws IOException {
@@ -590,7 +600,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		byte[] uuid=  new byte[16];
 		in.get(uuid);
 
-		new Thread(new ProxyStarter(this.host, listenPort, host, port, uuid)).start();
+		new Thread(new ProxyStarter(this.host, listenPort, host, port, uuid, socksOverTls)).start();
 	}
 
 	private final Map<Integer, PortForwardRequest> portForwardMap = new ConcurrentHashMap<>();
