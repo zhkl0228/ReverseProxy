@@ -3,8 +3,8 @@ package cn.banny.rp.server;
 import cn.banny.rp.*;
 import cn.banny.rp.auth.Auth;
 import cn.banny.rp.auth.AuthHandler;
+import cn.banny.rp.forward.ForwarderType;
 import cn.banny.rp.forward.PortForwarder;
-import cn.banny.rp.server.forward.BIOPortForwarder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,7 +170,7 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	private final List<PortForwarder> forwarders = new ArrayList<>();
 
 	@Override
-	public int startForward(boolean bindLocal, int port, String remoteHost, int remotePort)
+	public int startForward(boolean bindLocal, int port, String remoteHost, int remotePort, ForwarderType type)
 			throws IOException {
 		if(remoteHost == null ||
                 remoteHost.trim().isEmpty() ||
@@ -178,7 +178,7 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 			throw new IllegalArgumentException();
 		}
 		
-		PortForwarder forwarder = startForward(bindLocal, port, remoteHost, remotePort, this);
+		PortForwarder forwarder = startForward(bindLocal, port, remoteHost, remotePort, this, type);
 		int bindPort;
 		try {
 			bindPort = forwarder.start();
@@ -204,8 +204,8 @@ public abstract class AbstractRoute extends AbstractRouteContext implements Rout
 	 * @return 端口转向
 	 */
 	private PortForwarder startForward(boolean bindLocal, int port, String remoteHost,
-			int remotePort, AbstractRoute route) {
-		return new BIOPortForwarder(bindLocal, port, remoteHost, remotePort, route);
+									   int remotePort, AbstractRoute route, ForwarderType type) {
+		return type.startForward(bindLocal, port, remoteHost, remotePort, route);
 	}
 
 	@Override

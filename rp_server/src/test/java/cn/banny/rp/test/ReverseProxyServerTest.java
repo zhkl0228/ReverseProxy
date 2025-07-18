@@ -5,6 +5,7 @@ import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.Route;
 import cn.banny.rp.server.AbstractServerHandler;
 import cn.banny.rp.server.ServerHandler;
+import cn.banny.rp.server.forward.PortForwarderType;
 import cn.banny.rp.server.mina.MinaReverseProxyServer;
 import cn.banny.rp.server.mina.MinaServerHandler;
 import cn.banny.rp.server.socks.AbstractProxyServer;
@@ -100,7 +101,7 @@ public class ReverseProxyServerTest {
 					doTest(handler, route);
 				}
 				if("https".equalsIgnoreCase(line)) {
-					ReverseProxyServerTest.doHttps(handler, route);
+					ReverseProxyServerTest.doHttps(route);
 				}
 				if("http".equalsIgnoreCase(line)) {
 					ReverseProxyServerTest.doProxyHttp(new HttpHost("mm.gzmtx.cn", 8089));
@@ -115,7 +116,7 @@ public class ReverseProxyServerTest {
 				}
 				if("pip".equalsIgnoreCase(line)) {
 					Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress("mm.gzmtx.cn", 8889));
-					ReverseProxyServerTest.doProxyHttp(proxy, "http://www.whatismyip.com.tw");
+					ReverseProxyServerTest.doProxyHttp(proxy, "https://www.whatismyip.com.tw");
 				}
 				if("change".equalsIgnoreCase(line)) {
 					proxyClient = null;
@@ -128,15 +129,15 @@ public class ReverseProxyServerTest {
 					System.out.println("requested change ip");
 				}
 				if("baidu".equalsIgnoreCase(line)) {
-					ReverseProxyServerTest.doHttp(handler, route, "https://www.baidu.com");
+					ReverseProxyServerTest.doHttp(route, "https://www.baidu.com");
 				}
 				if("ip138".equalsIgnoreCase(line)) {
-					ReverseProxyServerTest.doHttp(handler, route, "https://2024.ip138.com/");
+					ReverseProxyServerTest.doHttp(route, "https://2025.ip138.com/");
 				}
 				if("bind".equalsIgnoreCase(line) &&
 						route != null) {
 					try {
-						route.startForward(true, 8888, "scp66.3322.org", 31000);
+						route.startForward(true, 8888, "scp66.3322.org", 31000, PortForwarderType.NIO);
 					} catch(IOException e) {
 						e.printStackTrace(System.err);
 					}
@@ -203,7 +204,7 @@ public class ReverseProxyServerTest {
 	private static HttpClient cachedClient;
 	private static Route cachedRoute;
 	
-	private static HttpClient createHttpClient(final ServerHandler handler, final Route route) throws NoSuchAlgorithmException, KeyManagementException {
+	private static HttpClient createHttpClient(final Route route) throws NoSuchAlgorithmException, KeyManagementException {
 		if(cachedRoute == route && cachedClient != null) {
 			return cachedClient;
 		}
@@ -338,7 +339,7 @@ public class ReverseProxyServerTest {
 
 	private static void doProxyHttp(final HttpHost proxy) {
 		HttpClient client = createProxyHttpClient(proxy);
-		HttpGet get = new HttpGet("http://1212.ip138.com/ic.asp");
+		HttpGet get = new HttpGet("https://1212.ip138.com/ic.asp");
 		InputStream inputStream = null;
 		try {
 			long start = System.currentTimeMillis();
@@ -375,8 +376,8 @@ public class ReverseProxyServerTest {
 		}
 	}
 
-	private static void doHttp(final ServerHandler handler, final Route route, String url) throws KeyManagementException, NoSuchAlgorithmException {
-		HttpClient client = createHttpClient(handler, route);
+	private static void doHttp(final Route route, String url) throws KeyManagementException, NoSuchAlgorithmException {
+		HttpClient client = createHttpClient(route);
 		HttpGet get = new HttpGet(url);
 		get.setHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36");
 		InputStream inputStream = null;
@@ -397,8 +398,8 @@ public class ReverseProxyServerTest {
 		}
 	}
 
-	private static void doHttps(final ServerHandler handler, final Route route) throws KeyManagementException, NoSuchAlgorithmException {
-		HttpClient client = createHttpClient(handler, route);
+	private static void doHttps(final Route route) throws KeyManagementException, NoSuchAlgorithmException {
+		HttpClient client = createHttpClient(route);
 		HttpGet get = new HttpGet("https://www.gzmtx.cn/ip.php");
 		InputStream inputStream = null;
 		try {

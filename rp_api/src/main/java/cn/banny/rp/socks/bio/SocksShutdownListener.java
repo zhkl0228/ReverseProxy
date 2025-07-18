@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.Socket;
 
-@Deprecated
 public class SocksShutdownListener implements ShutdownListener {
 
     private static final Logger log = LoggerFactory.getLogger(SocksShutdownListener.class);

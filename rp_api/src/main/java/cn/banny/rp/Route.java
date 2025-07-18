@@ -1,6 +1,7 @@
 package cn.banny.rp;
 
 import cn.banny.rp.auth.Auth;
+import cn.banny.rp.forward.ForwarderType;
 import cn.banny.rp.forward.PortForwarder;
 
 import java.io.IOException;
@@ -60,10 +61,11 @@ public interface Route extends MessageDeliver, RouteContext {
 	 * @param port 服务器监听端口
 	 * @param remoteHost 转发的主机
 	 * @param remotePort 转发的主机端口
+	 * @param type 转发的底层传输类型
 	 * @throws IOException 异常
 	 * @return 端口转发绑定的端口
 	 */
-	int startForward(boolean bindLocal, int port, String remoteHost, int remotePort) throws IOException;
+	int startForward(boolean bindLocal, int port, String remoteHost, int remotePort, ForwarderType type) throws IOException;
 
 	/**
 	 * @return 客户端版本号

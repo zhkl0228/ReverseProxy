@@ -485,7 +485,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		private int connectTimeoutInMillis;
 		@Override
 		public void run() {
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
 			StringBuilder builder = new StringBuilder(dateFormat.format(new Date())).append("ProxyStarter => ");
 			builder.append(serverHost).append(":").append(listenPort).append(" => ").append(host).append(":").append(port);
 			if (connectTimeoutInMillis > 0) {
@@ -498,25 +498,26 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			try (Socket server = new Socket();
 				 Socket client = new Socket()) {
 				if (readTimeoutInMillis > 0) {
-					client.setSoTimeout(readTimeoutInMillis);
-				} else {
-					client.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
-				}
-				if (connectTimeoutInMillis > 0) {
-					client.connect(new InetSocketAddress(host, port), connectTimeoutInMillis);
-				} else {
-					client.connect(new InetSocketAddress(host, port), 60000);
-				}
-
-				if (readTimeoutInMillis > 0) {
 					server.setSoTimeout(readTimeoutInMillis);
 				} else {
 					server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
 				}
+				if (readTimeoutInMillis > 0) {
+					client.setSoTimeout(readTimeoutInMillis);
+				} else {
+					client.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
+				}
+
 				if (connectTimeoutInMillis > 0) {
 					server.connect(new InetSocketAddress(serverHost, listenPort), connectTimeoutInMillis);
 				} else {
-					server.connect(new InetSocketAddress(serverHost, listenPort), 30000);
+					server.connect(new InetSocketAddress(serverHost, listenPort), 25000);
+				}
+
+				if (connectTimeoutInMillis > 0) {
+					client.connect(new InetSocketAddress(host, port), connectTimeoutInMillis);
+				} else {
+					client.connect(new InetSocketAddress(host, port), 3000);
 				}
 				try (InputStream serverIn = server.getInputStream();
 					 OutputStream serverOut = server.getOutputStream();

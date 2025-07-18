@@ -20,12 +20,11 @@ import java.util.concurrent.Executors;
  * @author zhkl0228
  *
  */
-@Deprecated
-public class AIOPortForwarder extends AbstractPortForwarder implements PortForwarder {
+class AIOPortForwarder extends AbstractPortForwarder implements PortForwarder {
 	
 	private static final Logger log = LoggerFactory.getLogger(AIOPortForwarder.class);
 
-	public AIOPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {
+	AIOPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {
 		super(bindLocal, inPort, outHost, outPort, route);
 	}
 	

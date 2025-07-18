@@ -14,11 +14,11 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class BIOPortForwarder extends AbstractPortForwarder implements PortForwarder, Runnable {
+class BIOPortForwarder extends AbstractPortForwarder implements PortForwarder, Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(BIOPortForwarder.class);
 
-    public BIOPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {
+    BIOPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {
         super(bindLocal, inPort, outHost, outPort, route);
     }
 

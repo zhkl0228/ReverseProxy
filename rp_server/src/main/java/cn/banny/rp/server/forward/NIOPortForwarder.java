@@ -19,8 +19,7 @@ import java.nio.channels.*;
  * @author zhkl0228
  *
  */
-@Deprecated
-public class NIOPortForwarder extends AbstractPortForwarder implements
+class NIOPortForwarder extends AbstractPortForwarder implements
 		PortForwarder, Runnable, NIOSocketSession {
 	
 	private static final Logger log = LoggerFactory.getLogger(NIOPortForwarder.class);
@@ -28,7 +27,7 @@ public class NIOPortForwarder extends AbstractPortForwarder implements
 	private Selector selector;
 	private ServerSocketChannel server;
 
-	public NIOPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {
+	NIOPortForwarder(boolean bindLocal, int inPort, String outHost, int outPort, AbstractRoute route) {
 		super(bindLocal, inPort, outHost, outPort, route);
 	}
 	

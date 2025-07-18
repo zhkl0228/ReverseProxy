@@ -6,6 +6,7 @@ import cn.banny.rp.auth.Auth;
 import cn.banny.rp.auth.AuthHandler;
 import cn.banny.rp.auth.AuthResult;
 import cn.banny.rp.handler.ExtDataHandler;
+import cn.banny.rp.server.forward.PortForwarderType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,12 +127,25 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 	}
 
 	private void parseRequestForward(ByteBuffer in, AbstractRoute route) throws IOException {
+		PortForwarderType type = PortForwarderType.BIO;
 		int port = in.getShort() & 0xffff;
 		String remoteHost = ReverseProxy.readUTF(in);
 		boolean bindLocal = false;
 		if (ReverseProxy.isEmpty(remoteHost)) {
 			remoteHost = "localhost";
 			bindLocal = true;
+		} else {
+			switch (remoteHost) {
+				case "0":
+				case "1":
+				case "2":
+					type = PortForwarderType.values()[Integer.parseInt(remoteHost)];
+					remoteHost = "localhost";
+					bindLocal = true;
+					break;
+				default:
+					break;
+			}
 		}
 		int remotePort = in.getShort() & 0xffff;
 		IOException exception = null;
@@ -141,7 +155,7 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 				throw new IOException("Port forward NOT enabled!");
 			}
 			
-			port = route.startForward(bindLocal, port, remoteHost, remotePort);
+			port = route.startForward(bindLocal, port, remoteHost, remotePort, type);
 		} catch(IOException e) {
 			exception = e;
 		}

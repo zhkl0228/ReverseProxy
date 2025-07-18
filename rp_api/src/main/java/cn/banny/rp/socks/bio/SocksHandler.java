@@ -42,18 +42,23 @@ public class SocksHandler implements Runnable {
 
     @Override
     public void run() {
-        try (InputStream inputStream = socket.getInputStream();
-             OutputStream outputStream = socket.getOutputStream()) {
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        try {
             socket.setSoTimeout(SO_TIMEOUT);
+            inputStream = socket.getInputStream();
+            outputStream = socket.getOutputStream();
             process(inputStream, outputStream);
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             log.debug("handle socks failed: socket={}", socket, e);
-        } finally {
+
+            ReverseProxy.closeQuietly(inputStream);
+            ReverseProxy.closeQuietly(outputStream);
             ReverseProxy.closeQuietly(socket);
         }
     }
 
-    private void process(InputStream inputStream, OutputStream outputStream) throws IOException, InterruptedException {
+    private void process(InputStream inputStream, OutputStream outputStream) throws IOException {
         DataInputStream dis = new DataInputStream(inputStream);
         byte v = dis.readByte();
         switch (v) {
@@ -83,7 +88,7 @@ public class SocksHandler implements Runnable {
         }
     }
 
-    private void handleV5(DataInputStream dis, InputStream inputStream, OutputStream outputStream) throws IOException, InterruptedException {
+    private void handleV5(DataInputStream dis, InputStream inputStream, OutputStream outputStream) throws IOException {
         DataOutputStream dos = new DataOutputStream(outputStream);
 
         byte methods = dis.readByte();
@@ -139,10 +144,14 @@ public class SocksHandler implements Runnable {
         dos.writeInt(0x5000001);
         dos.write(ipv4);
         dos.writeShort(socketAddress.getPort());
-        createStreamForward(inputStream, outputStream, socket, builder.toString());
+        dos.flush();
+
+        ShutdownListener listener = new SocksShutdownListener(builder.toString());
+        executorService.submit(new StreamPipe(this.socket, inputStream, socket, socket.getOutputStream(), listener));
+        executorService.submit(new StreamPipe(socket, socket.getInputStream(), this.socket, outputStream, listener));
     }
 
-    private void handleConnectV4(DataInputStream dis, InputStream inputStream, OutputStream outputStream) throws IOException, InterruptedException {
+    private void handleConnectV4(DataInputStream dis, InputStream inputStream, OutputStream outputStream) throws IOException {
         DataOutputStream dos = new DataOutputStream(outputStream);
 
         byte cd = dis.readByte();
@@ -189,20 +198,11 @@ public class SocksHandler implements Runnable {
         dos.writeShort(0x5a);
         dos.writeShort(port);
         dos.write(ipv4);
-        createStreamForward(inputStream, outputStream, socket, builder.toString());
-    }
+        dos.flush();
 
-    private void createStreamForward(InputStream inputStream, OutputStream outputStream, Socket socket, String threadName) throws IOException, InterruptedException {
-        outputStream.flush();
-        try (OutputStream serverOut = socket.getOutputStream();
-             InputStream serverIn = socket.getInputStream()) {
-            CountDownShutdownListener listener = new CountDownShutdownListener(threadName);
-            executorService.submit(new StreamPipe(this.socket, inputStream, socket, serverOut, listener));
-            executorService.submit(new StreamPipe(socket, serverIn, this.socket, outputStream, listener));
-            listener.waitCountDown();
-        } finally {
-            ReverseProxy.closeQuietly(socket);
-        }
+        ShutdownListener listener = new SocksShutdownListener(builder.toString());
+        executorService.submit(new StreamPipe(this.socket, inputStream, socket, socket.getOutputStream(), listener));
+        executorService.submit(new StreamPipe(socket, socket.getInputStream(), this.socket, outputStream, listener));
     }
 
 }
