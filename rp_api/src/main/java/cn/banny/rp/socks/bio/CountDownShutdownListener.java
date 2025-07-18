@@ -9,8 +9,21 @@ public class CountDownShutdownListener implements ShutdownListener {
 
     private final CountDownLatch countDownLatch = new CountDownLatch(2);
 
+    private final String threadName;
+
+    public CountDownShutdownListener(String threadName) {
+        this.threadName = threadName;
+    }
+
+    private String backupThreadName;
+
     @Override
     public void onStreamStart() {
+        if (threadName != null) {
+            Thread thread = Thread.currentThread();
+            backupThreadName = thread.getName();
+            thread.setName(threadName);
+        }
     }
 
     @Override
@@ -34,6 +47,10 @@ public class CountDownShutdownListener implements ShutdownListener {
 
     @Override
     public void onStreamEnd() {
+        if (backupThreadName != null) {
+            Thread thread = Thread.currentThread();
+            thread.setName(backupThreadName);
+        }
         countDownLatch.countDown();
     }
 

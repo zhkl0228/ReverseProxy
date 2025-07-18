@@ -11,7 +11,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 
 public class SocksHandler implements Runnable {
@@ -103,6 +106,9 @@ public class SocksHandler implements Runnable {
         dis.readByte();//0
 
         final Socket socket;
+
+        DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
+        StringBuilder builder = new StringBuilder(dateFormat.format(new Date())).append("PROXY => ");
         byte addrType = dis.readByte();
         if(addrType == 3) {//host
             byte[] hb = new byte[dis.readUnsignedByte()];
@@ -111,6 +117,7 @@ public class SocksHandler implements Runnable {
             int port = dis.readUnsignedShort();
 
             socket = connectSocket(SocketType.V5Host, new InetSocketAddress(host, port));
+            builder.append(host).append(":").append(port);
         } else if(addrType == 1) {//address
             byte[] ipv4 = new byte[4];
             dis.readFully(ipv4);
@@ -118,6 +125,7 @@ public class SocksHandler implements Runnable {
 
             InetAddress address = InetAddress.getByAddress(ipv4);
             socket = connectSocket(SocketType.V5, new InetSocketAddress(address, port));
+            builder.append(address.getHostAddress()).append(":").append(port);
         } else {
             throw new IOException("Unsupported tcp address type: " + addrType);
         }
@@ -131,7 +139,7 @@ public class SocksHandler implements Runnable {
         dos.writeInt(0x5000001);
         dos.write(ipv4);
         dos.writeShort(socketAddress.getPort());
-        createStreamForward(inputStream, outputStream, socket);
+        createStreamForward(inputStream, outputStream, socket, builder.toString());
     }
 
     private void handleConnectV4(DataInputStream dis, InputStream inputStream, OutputStream outputStream) throws IOException, InterruptedException {
@@ -157,6 +165,8 @@ public class SocksHandler implements Runnable {
 
         final Socket socket;
 
+        DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
+        StringBuilder builder = new StringBuilder(dateFormat.format(new Date())).append("PROXY => ");
         if(ipv4[0] == 0 && ipv4[1] == 0 && ipv4[2] == 0 && ipv4[3] != 0) { // socksv4a
             baos.reset();
             while((b = dis.readByte()) != 0) {
@@ -164,9 +174,11 @@ public class SocksHandler implements Runnable {
             }
             String host = new String(baos.toByteArray(), StandardCharsets.UTF_8);
             socket = connectSocket(SocketType.V4A, new InetSocketAddress(host, port));
+            builder.append(host).append(":").append(port);
         } else { // socksv4
             InetAddress address = InetAddress.getByAddress(ipv4);
             socket = connectSocket(SocketType.V4, new InetSocketAddress(address, port));
+            builder.append(address.getHostAddress()).append(":").append(port);
         }
 
         InetSocketAddress socketAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
@@ -177,14 +189,14 @@ public class SocksHandler implements Runnable {
         dos.writeShort(0x5a);
         dos.writeShort(port);
         dos.write(ipv4);
-        createStreamForward(inputStream, outputStream, socket);
+        createStreamForward(inputStream, outputStream, socket, builder.toString());
     }
 
-    private void createStreamForward(InputStream inputStream, OutputStream outputStream, Socket socket) throws IOException, InterruptedException {
+    private void createStreamForward(InputStream inputStream, OutputStream outputStream, Socket socket, String threadName) throws IOException, InterruptedException {
         outputStream.flush();
         try (OutputStream serverOut = socket.getOutputStream();
              InputStream serverIn = socket.getInputStream()) {
-            CountDownShutdownListener listener = new CountDownShutdownListener();
+            CountDownShutdownListener listener = new CountDownShutdownListener(threadName);
             executorService.submit(new StreamPipe(this.socket, inputStream, socket, serverOut, listener));
             executorService.submit(new StreamPipe(socket, serverIn, this.socket, outputStream, listener));
             listener.waitCountDown();

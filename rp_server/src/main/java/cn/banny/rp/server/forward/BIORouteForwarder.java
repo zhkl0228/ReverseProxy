@@ -17,6 +17,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 
 public class BIORouteForwarder extends AbstractChannelForwarder implements RouteForwarder, Runnable {
@@ -45,8 +48,11 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
     @Override
     public void run() {
         log.debug("start accept channel socket on port: {}", serverSocket.getLocalPort());
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        StringBuilder builder = new StringBuilder(dateFormat.format(new Date())).append("RouteForwarder => ");
         try (Socket client = serverSocket.accept();
              Socket server = this.socket) {
+            builder.append(client.getRemoteSocketAddress()).append(" => ").append(server.getRemoteSocketAddress());
             this.socket = null;
             ReverseProxy.closeQuietly(serverSocket);
             serverSocket = null;
@@ -54,7 +60,7 @@ public class BIORouteForwarder extends AbstractChannelForwarder implements Route
                  OutputStream serverOut = server.getOutputStream();
                  InputStream clientIn = client.getInputStream();
                  OutputStream clientOut = client.getOutputStream()) {
-                CountDownShutdownListener listener = new CountDownShutdownListener();
+                CountDownShutdownListener listener = new CountDownShutdownListener(builder.toString());
                 executorService.submit(new StreamPipe(server, serverIn, client, clientOut, listener));
                 executorService.submit(new StreamPipe(client, clientIn, server, serverOut, listener));
                 listener.waitCountDown();

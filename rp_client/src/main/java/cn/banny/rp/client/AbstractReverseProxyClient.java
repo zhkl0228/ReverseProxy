@@ -485,6 +485,8 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		private int connectTimeoutInMillis;
 		@Override
 		public void run() {
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			StringBuilder builder = new StringBuilder(dateFormat.format(new Date())).append("ProxyStarter => ");
 			try (Socket server = new Socket();
 				 Socket client = new Socket()) {
 				if (readTimeoutInMillis > 0) {
@@ -509,17 +511,20 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 					server.connect(new InetSocketAddress(serverHost, listenPort), 30000);
 				}
 
+				builder.append(host).append(":").append(port).append(" => ").append(serverHost).append(":").append(listenPort);
+				builder.append("with connectTimeout=").append(connectTimeoutInMillis);
+				builder.append(", with readTimeout=").append(readTimeoutInMillis);
 				try (InputStream serverIn = server.getInputStream();
 					 OutputStream serverOut = server.getOutputStream();
 					 InputStream clientIn = client.getInputStream();
 					 OutputStream clientOut = client.getOutputStream()) {
-					CountDownShutdownListener listener = new CountDownShutdownListener();
+					CountDownShutdownListener listener = new CountDownShutdownListener(builder.toString());
 					new Thread(new StreamPipe(server, serverIn, client, clientOut, listener)).start();
 					new Thread(new StreamPipe(client, clientIn, server, serverOut, listener)).start();
 					listener.waitCountDown();
 				}
 			} catch (IOException | InterruptedException e) {
-				log.debug("parseStartProxy listenPort={}, host={}, port={}, serverHost={}", listenPort, host, port, serverHost, e);
+				log.info("parseStartProxy client={}:{}, server={}:{}", host, port, serverHost, listenPort, e);
 			}
 		}
 	}
