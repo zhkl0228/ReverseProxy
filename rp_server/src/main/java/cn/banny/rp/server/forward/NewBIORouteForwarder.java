@@ -17,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.Exchanger;
@@ -31,21 +32,24 @@ class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForw
     private final NewBIOPortForwarder forwarderListener;
     private final ExecutorService executorService;
     private final Exchanger<Socket> exchanger;
+    private final AbstractRoute route;
+    private final ByteBuffer startProxyBuffer;
 
     NewBIORouteForwarder(Socket socket, NewBIOPortForwarder forwarderListener, AbstractRoute route, String host, int port, ExecutorService executorService,
                          int listenPort) {
         this.socket = socket;
         this.forwarderListener = forwarderListener;
         this.executorService = executorService;
+        this.route = route;
         this.exchanger = new Exchanger<>();
 
         UUID uuid = UUID.randomUUID();
         ByteBuffer buffer = ByteBuffer.allocate(16);
         buffer.putLong(uuid.getMostSignificantBits());
         buffer.putLong(uuid.getLeastSignificantBits());
-        forwarderListener.exchangerMap.put(buffer.array(), exchanger);
+        forwarderListener.exchangerMap.put(Arrays.hashCode(buffer.array()), exchanger);
+        startProxyBuffer = createStartProxy(listenPort, host, port, buffer.array());
         executorService.submit(this);
-        route.sendRequest(createStartProxy(listenPort, host, port, buffer.array()));
     }
 
     private ByteBuffer createStartProxy(int listenPort, String host, int port, byte[] uuid) {
@@ -63,6 +67,7 @@ class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForw
 
     @Override
     public void run() {
+        route.sendRequest(startProxyBuffer);
         log.debug("start accept channel socket");
         DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
         try (Socket client = exchanger.exchange(null, 30, TimeUnit.SECONDS);

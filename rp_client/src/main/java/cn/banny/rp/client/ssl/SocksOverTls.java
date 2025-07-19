@@ -47,6 +47,7 @@ public class SocksOverTls {
         SSLSocket socket = null;
         InputStream inputStream = null;
         OutputStream outputStream = null;
+        final InetSocketAddress targetAddress = new InetSocketAddress(domain, 443);
         try {
             SSLContext context = SSLContext.getInstance("TLS");
             context.init(null, null, new SecureRandom());
@@ -55,7 +56,7 @@ public class SocksOverTls {
             parameters.setApplicationProtocols(SOCKS_OVER_SSL_ALPN);
             socket.setSSLParameters(parameters);
             socket.setSoTimeout(READ_TIMEOUT);
-            socket.connect(new InetSocketAddress(domain, 443), connectTimeMillis);
+            socket.connect(targetAddress, connectTimeMillis);
             inputStream = socket.getInputStream();
             outputStream = socket.getOutputStream();
             BufferedOutputStream out =  new BufferedOutputStream(outputStream);
@@ -161,7 +162,7 @@ public class SocksOverTls {
             ReverseProxy.closeQuietly(outputStream);
             ReverseProxy.closeQuietly(socket);
             log.debug("newSocksOverTlsSocket domain={}, localPort={}", domain, localPort, e);
-            throw e;
+            throw new IOException("openSocksSocket failed: targetAddress=" + targetAddress, e);
         } catch (KeyManagementException | NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }

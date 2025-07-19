@@ -42,6 +42,7 @@ class NewBIOPortForwarder extends AbstractPortForwarder implements PortForwarder
         canStop = false;
         clientServer = new ServerSocket();
         clientServer.bind(new InetSocketAddress(0));
+        clientServer.setReuseAddress(true);
 
         serverSocket = new ServerSocket();
         serverSocket.bind(createBindAddress());
@@ -64,7 +65,7 @@ class NewBIOPortForwarder extends AbstractPortForwarder implements PortForwarder
         executorService.shutdown();
     }
 
-    final Map<byte[], Exchanger<Socket>> exchangerMap = new PassiveExpiringMap<>(30, TimeUnit.SECONDS);
+    final Map<Integer, Exchanger<Socket>> exchangerMap = new PassiveExpiringMap<>(1, TimeUnit.MINUTES);
 
     private class CheckClientHandler implements Runnable {
         private final Socket socket;
@@ -79,14 +80,15 @@ class NewBIOPortForwarder extends AbstractPortForwarder implements PortForwarder
                 inputStream = socket.getInputStream();
                 byte[] uuid = new byte[16];
                 new DataInputStream(inputStream).readFully(uuid);
-                Exchanger<Socket> exchanger = exchangerMap.remove(uuid);
+                Exchanger<Socket> exchanger = exchangerMap.remove(Arrays.hashCode(uuid));
                 if (exchanger != null) {
                     socket.setSoTimeout(0);
-                    exchanger.exchange(socket, 3, TimeUnit.SECONDS);
+                    exchanger.exchange(socket, 5, TimeUnit.SECONDS);
                 } else {
                     throw new IllegalStateException("No exchanger for uuid: " + Arrays.toString(uuid));
                 }
             } catch(Throwable t) {
+                t.printStackTrace(System.err);
                 log.debug("check client failed.", t);
                 ReverseProxy.closeQuietly(inputStream);
                 ReverseProxy.closeQuietly(socket);

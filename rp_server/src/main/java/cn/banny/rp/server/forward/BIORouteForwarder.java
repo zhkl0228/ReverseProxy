@@ -25,24 +25,28 @@ class BIORouteForwarder extends AbstractChannelForwarder implements RouteForward
     private Socket socket;
     private final ForwarderListener forwarderListener;
     private final ExecutorService executorService;
+    private final AbstractRoute route;
 
     private ServerSocket serverSocket;
+    private final ByteBuffer startProxyBuffer;
 
     BIORouteForwarder(Socket socket, ForwarderListener forwarderListener, AbstractRoute route, String host, int port, ExecutorService executorService) throws IOException {
         this.socket = socket;
         this.forwarderListener = forwarderListener;
         this.executorService = executorService;
+        this.route = route;
 
         serverSocket = new ServerSocket();
         serverSocket.setSoTimeout(30000); // 等待30秒连接超时
         serverSocket.bind(new InetSocketAddress(0));
 
+        startProxyBuffer = createStartProxy(serverSocket.getLocalPort(), host, port);
         executorService.submit(this);
-        route.sendRequest(createStartProxy(serverSocket.getLocalPort(), host, port));
     }
 
     @Override
     public void run() {
+        route.sendRequest(startProxyBuffer);
         log.debug("start accept channel socket on port: {}", serverSocket.getLocalPort());
         DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
         try (Socket client = serverSocket.accept();
