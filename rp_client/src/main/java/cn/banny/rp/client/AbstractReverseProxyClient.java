@@ -6,7 +6,8 @@ import cn.banny.rp.auth.AuthResult;
 import cn.banny.rp.client.ssl.SocksOverTls;
 import cn.banny.rp.forward.ForwarderType;
 import cn.banny.rp.handler.ExtDataHandler;
-import cn.banny.rp.socks.bio.CountDownShutdownListener;
+import cn.banny.rp.socks.bio.ShutdownListener;
+import cn.banny.rp.socks.bio.SocksShutdownListener;
 import cn.banny.rp.socks.bio.StreamPipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -518,7 +519,12 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			}
 			Thread.currentThread().setName(builder.toString());
 			Socket server = null;
-			try (Socket client = new Socket()) {
+			Socket client = null;
+			InputStream serverIn = null;
+			OutputStream serverOut = null;
+			InputStream clientIn = null;
+			OutputStream clientOut = null;
+			try {
 				Throwable openSocksSocketException = null;
 				final Date startConnectTime = new Date();
 				Date openSocksSocketExceptionTime = null;
@@ -556,6 +562,13 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 					}
 				}
 
+				serverOut = server.getOutputStream();
+				if (uuid != null) {
+					serverOut.write(uuid);
+					serverOut.flush();
+				}
+
+				client = new Socket();
 				if (readTimeoutInMillis > 0) {
 					client.setSoTimeout(readTimeoutInMillis);
 				} else {
@@ -567,24 +580,21 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 				} else {
 					client.connect(new InetSocketAddress(host, port), 3000);
 				}
-				try (InputStream serverIn = server.getInputStream();
-					 OutputStream serverOut = server.getOutputStream();
-					 InputStream clientIn = client.getInputStream();
-					 OutputStream clientOut = client.getOutputStream()) {
-					if (uuid != null) {
-						serverOut.write(uuid);
-						serverOut.flush();
-					}
-					CountDownShutdownListener listener = new CountDownShutdownListener(null);
-					String threadName = builder.toString();
-					new Thread(new StreamPipe(server, serverIn, client, clientOut, listener), threadName).start();
-					new Thread(new StreamPipe(client, clientIn, server, serverOut, listener), threadName).start();
-					listener.waitCountDown();
-				}
+				serverIn = server.getInputStream();
+				clientIn = client.getInputStream();
+				clientOut = client.getOutputStream();
+				String threadName = builder.toString();
+				ShutdownListener listener = new SocksShutdownListener(threadName);
+				new Thread(new StreamPipe(server, serverIn, client, clientOut, listener), threadName).start();
+				new Thread(new StreamPipe(client, clientIn, server, serverOut, listener), threadName).start();
 			} catch (Exception e) {
-				log.info("parseStartProxy client={}:{}, server={}:{}", host, port, serverHost, listenPort, e);
-			} finally {
+				ReverseProxy.closeQuietly(serverIn);
+				ReverseProxy.closeQuietly(clientIn);
+				ReverseProxy.closeQuietly(serverOut);
+				ReverseProxy.closeQuietly(clientOut);
 				ReverseProxy.closeQuietly(server);
+				ReverseProxy.closeQuietly(client);
+				log.info("parseStartProxy client={}:{}, server={}:{}", host, port, serverHost, listenPort, e);
 			}
 		}
 	}
