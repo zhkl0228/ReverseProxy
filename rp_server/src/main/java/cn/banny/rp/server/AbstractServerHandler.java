@@ -135,17 +135,19 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 			remoteHost = "localhost";
 			bindLocal = true;
 		} else {
-			switch (remoteHost) {
-				case "0":
-				case "1":
-				case "2":
-				case "3":
-					type = PortForwarderType.values()[Integer.parseInt(remoteHost)];
+			int index = -1;
+			try {
+				index = Integer.parseInt(remoteHost);
+			} catch(NumberFormatException ignored) {}
+			if (index != -1) {
+				boolean mask = (index & 0x80) != 0;
+				index &= ~0x80;
+				PortForwarderType[] types = PortForwarderType.values();
+				if (index >= 0 && index < types.length) {
+					type = types[index];
 					remoteHost = "localhost";
-					bindLocal = true;
-					break;
-				default:
-					break;
+					bindLocal = !mask;
+				}
 			}
 		}
 		int remotePort = in.getShort() & 0xffff;
