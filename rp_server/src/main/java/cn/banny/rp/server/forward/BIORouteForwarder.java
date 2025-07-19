@@ -46,9 +46,9 @@ class BIORouteForwarder extends AbstractChannelForwarder implements RouteForward
 
     @Override
     public void run() {
-        route.sendRequest(startProxyBuffer);
         log.debug("start accept channel socket on port: {}", serverSocket.getLocalPort());
         DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
+        route.sendRequest(startProxyBuffer);
         try (Socket client = serverSocket.accept();
              Socket server = this.socket) {
             String threadName = dateFormat.format(new Date()) + "RouteForwarder => " +

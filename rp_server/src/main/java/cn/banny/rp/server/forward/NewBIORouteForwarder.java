@@ -34,6 +34,7 @@ class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForw
     private final Exchanger<Socket> exchanger;
     private final AbstractRoute route;
     private final ByteBuffer startProxyBuffer;
+    private final int exchangerKey;
 
     NewBIORouteForwarder(Socket socket, NewBIOPortForwarder forwarderListener, AbstractRoute route, String host, int port, ExecutorService executorService,
                          int listenPort) {
@@ -47,7 +48,8 @@ class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForw
         ByteBuffer buffer = ByteBuffer.allocate(16);
         buffer.putLong(uuid.getMostSignificantBits());
         buffer.putLong(uuid.getLeastSignificantBits());
-        forwarderListener.exchangerMap.put(Arrays.hashCode(buffer.array()), exchanger);
+        this.exchangerKey = Arrays.hashCode(buffer.array());
+        forwarderListener.exchangerMap.put(exchangerKey, exchanger);
         startProxyBuffer = createStartProxy(listenPort, host, port, buffer.array());
         executorService.submit(this);
     }
@@ -67,9 +69,9 @@ class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForw
 
     @Override
     public void run() {
-        route.sendRequest(startProxyBuffer);
         log.debug("start accept channel socket");
         DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
+        route.sendRequest(startProxyBuffer);
         try (Socket client = exchanger.exchange(null, 30, TimeUnit.SECONDS);
              Socket server = this.socket) {
             this.socket = null;
@@ -112,6 +114,7 @@ class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForw
     @Override
     public void close() {
         ReverseProxy.closeQuietly(socket);
+        forwarderListener.exchangerMap.remove(exchangerKey);
         forwarderListener.notifyForwarderClosed(this);
     }
 

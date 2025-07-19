@@ -4,6 +4,7 @@ import cn.banny.rp.RequestConnect;
 import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.auth.AuthResult;
 import cn.banny.rp.client.ssl.SocksOverTls;
+import cn.banny.rp.forward.ForwarderType;
 import cn.banny.rp.handler.ExtDataHandler;
 import cn.banny.rp.socks.bio.CountDownShutdownListener;
 import cn.banny.rp.socks.bio.StreamPipe;
@@ -459,7 +460,12 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		PortForwardRequest forwardRequest = new PortForwardRequest(remotePort, host, port);
 		requestForward(forwardRequest);
 	}
-	
+
+	@Override
+	public void requestForward(int remotePort, ForwarderType type, int port) {
+		requestForward(remotePort, String.valueOf(type.ordinal()), port);
+	}
+
 	private void requestForward(PortForwardRequest forwardRequest) {
 		portForwardMap.remove(forwardRequest.getRemotePort());
 		if(!forwardRequest.isValid()) {
@@ -522,7 +528,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 						if (readTimeoutInMillis > 0) {
 							server.setSoTimeout(readTimeoutInMillis);
 						} else {
-							server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
+							server.setSoTimeout((int) TimeUnit.HOURS.toMillis(1));
 						}
 					} catch (Throwable t) {
 						openSocksSocketExceptionTime = new Date();
@@ -534,7 +540,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 					if (readTimeoutInMillis > 0) {
 						server.setSoTimeout(readTimeoutInMillis);
 					} else {
-						server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
+						server.setSoTimeout((int) TimeUnit.HOURS.toMillis(1));
 					}
 					if (connectTimeoutInMillis > 0) {
 						server.connect(new InetSocketAddress(serverHost, listenPort), connectTimeoutInMillis);

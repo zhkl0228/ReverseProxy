@@ -2,6 +2,7 @@ package cn.banny.rp.client;
 
 import cn.banny.rp.MessageDeliver;
 import cn.banny.rp.auth.AuthResult;
+import cn.banny.rp.forward.ForwarderType;
 import cn.banny.rp.handler.ExtDataHandler;
 
 public interface ReverseProxyClient extends MessageDeliver {
@@ -56,6 +57,8 @@ public interface ReverseProxyClient extends MessageDeliver {
 	 * @param port 远端端口
 	 */
 	void requestForward(int remotePort, String host, int port);
+
+	void requestForward(int remotePort, ForwarderType type, int port);
 
 	/**
 	 * 网络延时，单位毫秒

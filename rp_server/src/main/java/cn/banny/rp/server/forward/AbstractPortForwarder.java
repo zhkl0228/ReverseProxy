@@ -89,7 +89,9 @@ public abstract class AbstractPortForwarder extends ForwarderAware implements Po
 
 	@Override
 	public final Thread newThread(Runnable r) {
-		return new Thread(r, getClass().getSimpleName() + ", in=" + inPort + ", host=" + outHost + ", out=" + outPort);
+		Thread thread = new Thread(r, getClass().getSimpleName() + ", in=" + inPort + ", host=" + outHost + ", out=" + outPort);
+		thread.setDaemon(true);
+		return thread;
 	}
 
 }

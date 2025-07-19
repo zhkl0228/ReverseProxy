@@ -47,11 +47,11 @@ public class CountDownShutdownListener implements ShutdownListener {
 
     @Override
     public void onStreamEnd() {
+        countDownLatch.countDown();
         if (backupThreadName != null) {
             Thread thread = Thread.currentThread();
             thread.setName(backupThreadName);
         }
-        countDownLatch.countDown();
     }
 
 }
