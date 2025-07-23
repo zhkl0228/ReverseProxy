@@ -412,7 +412,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			closeSession();
 		}
 		
-		if(currentTimeMillis - lastPortForwardRequestTime > TimeUnit.SECONDS.toMillis(30) &&
+		if(currentTimeMillis - lastPortForwardRequestTime > TimeUnit.SECONDS.toMillis(3) &&
 				!portForwardMap.isEmpty()) {
 			for(PortForwardRequest request : portForwardMap.values()) {
 				requestForward(request);
@@ -517,7 +517,8 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			if (readTimeoutInMillis > 0) {
 				builder.append(" with readTimeout=").append(readTimeoutInMillis);
 			}
-			Thread.currentThread().setName(builder.toString());
+			String threadName = builder.toString();
+			Thread.currentThread().setName(threadName);
 			Socket server = null;
 			Socket client = null;
 			InputStream serverIn = null;
@@ -534,7 +535,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 						if (readTimeoutInMillis > 0) {
 							server.setSoTimeout(readTimeoutInMillis);
 						} else {
-							server.setSoTimeout((int) TimeUnit.HOURS.toMillis(1));
+							server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
 						}
 					} catch (Throwable t) {
 						openSocksSocketExceptionTime = new Date();
@@ -546,7 +547,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 					if (readTimeoutInMillis > 0) {
 						server.setSoTimeout(readTimeoutInMillis);
 					} else {
-						server.setSoTimeout((int) TimeUnit.HOURS.toMillis(1));
+						server.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
 					}
 					if (connectTimeoutInMillis > 0) {
 						server.connect(new InetSocketAddress(serverHost, listenPort), connectTimeoutInMillis);
@@ -583,8 +584,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 				serverIn = server.getInputStream();
 				clientIn = client.getInputStream();
 				clientOut = client.getOutputStream();
-				String threadName = builder.toString();
-				ShutdownListener listener = new SocksShutdownListener(threadName);
+				ShutdownListener listener = new SocksShutdownListener(null);
 				new Thread(new StreamPipe(server, serverIn, client, clientOut, listener), threadName).start();
 				new Thread(new StreamPipe(client, clientIn, server, serverOut, listener), threadName).start();
 			} catch (Exception e) {
@@ -647,8 +647,8 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		
 		lastPortForwardRequestTime = System.currentTimeMillis();
 		int remotePort = in.getShort() & 0xffff;
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		if(in.get() == 0) { // no exception
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			portForwardMap.remove(remotePort);
             log.debug("{}[{}]parseRequestForward bind remote port#{} successfully!", label, dateFormat.format(new Date()), remotePort);
 
@@ -658,7 +658,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 				authListener.onPortForward(this, remotePort, host, port);
 			}
 		} else {
-            log.info("{}[{}]parseRequestForward bind remote port#{} failed: {}", label, dateFormat.format(new Date()), remotePort, ReverseProxy.readUTF(in));
+            log.info("{}[{}]parseRequestForward bind remote port#{} failed: {}", label, host, remotePort, ReverseProxy.readUTF(in));
 		}
 	}
 
