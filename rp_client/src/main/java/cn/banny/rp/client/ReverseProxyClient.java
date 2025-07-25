@@ -53,8 +53,7 @@ public interface ReverseProxyClient extends MessageDeliver {
 	/**
 	 * 请求端口转向
 	 * @param remotePort 远程绑定端口，0 表示随机分配可用端口
-	 * @param host 远端主机 空字符串表示 localhost，并且远端绑定端口在 127.0.0.1
-	 *             <br />如果是数字，则 "0" 表示 BIO，"1" 表示 NIO，"2" 表示 AIO，"3" 表示 NewBIO，"4" 表示 Kwik
+	 * @param host 远端主机 空字符串表示 localhost，并且远端绑定端口在 127.0.0.1，如果是数字，则 "0" 表示 BIO，"1" 表示 NIO，"2" 表示 AIO，"3" 表示 NewBIO，"4" 表示 Kwik
 	 * @param port 远端端口
 	 */
 	void requestForward(int remotePort, String host, int port);
