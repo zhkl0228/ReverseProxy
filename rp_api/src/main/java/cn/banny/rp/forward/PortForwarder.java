@@ -9,6 +9,8 @@ import java.util.concurrent.ThreadFactory;
  */
 public interface PortForwarder extends ForwarderListener, ThreadFactory {
 
+	String APPLICATION_PROTOCOL = "rp";
+
 	String getOutHost();
 	int getOutPort();
 

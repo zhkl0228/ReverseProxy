@@ -1,25 +1,25 @@
 package cn.banny.rp.socks.bio;
 
 import cn.banny.rp.ReverseProxy;
+import cn.banny.rp.forward.StreamSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
 
 public class StreamPipe implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(StreamPipe.class);
 
-    private final Socket in;
+    private final StreamSocket in;
     private final InputStream inputStream;
-    private final Socket out;
+    private final StreamSocket out;
     private final OutputStream outputStream;
     private final ShutdownListener shutdownListener;
 
-    public StreamPipe(Socket in, InputStream inputStream, Socket out, OutputStream outputStream, ShutdownListener shutdownListener) {
+    public StreamPipe(StreamSocket in, InputStream inputStream, StreamSocket out, OutputStream outputStream, ShutdownListener shutdownListener) {
         this.in = in;
         this.inputStream = inputStream;
         this.out = out;

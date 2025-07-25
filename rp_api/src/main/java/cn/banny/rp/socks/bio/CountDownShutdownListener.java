@@ -1,7 +1,8 @@
 package cn.banny.rp.socks.bio;
 
+import cn.banny.rp.forward.StreamSocket;
+
 import java.io.IOException;
-import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -27,11 +28,11 @@ public class CountDownShutdownListener implements ShutdownListener {
     }
 
     @Override
-    public void onShutdownInput(Socket socket) {
+    public void onShutdownInput(StreamSocket socket) {
     }
 
     @Override
-    public void onShutdownOutput(Socket socket) {
+    public void onShutdownOutput(StreamSocket socket) {
     }
 
     public void waitCountDown() throws InterruptedException, IOException {

@@ -1,6 +1,7 @@
 package cn.banny.rp.socks.bio;
 
 import cn.banny.rp.ReverseProxy;
+import cn.banny.rp.forward.StreamSocket;
 import cn.banny.rp.socks.SocketFactory;
 import cn.banny.rp.socks.SocketType;
 import org.slf4j.Logger;
@@ -147,8 +148,10 @@ public class SocksHandler implements Runnable {
         dos.flush();
 
         ShutdownListener listener = new SocksShutdownListener(builder.toString());
-        executorService.submit(new StreamPipe(this.socket, inputStream, socket, socket.getOutputStream(), listener));
-        executorService.submit(new StreamPipe(socket, socket.getInputStream(), this.socket, outputStream, listener));
+        StreamSocket s1 = StreamSocket.forSocket(this.socket);
+        StreamSocket s2 = StreamSocket.forSocket(socket);
+        executorService.submit(new StreamPipe(s1, inputStream, s2, socket.getOutputStream(), listener));
+        executorService.submit(new StreamPipe(s2, socket.getInputStream(), s1, outputStream, listener));
     }
 
     private void handleConnectV4(DataInputStream dis, InputStream inputStream, OutputStream outputStream) throws IOException {
@@ -201,8 +204,10 @@ public class SocksHandler implements Runnable {
         dos.flush();
 
         ShutdownListener listener = new SocksShutdownListener(builder.toString());
-        executorService.submit(new StreamPipe(this.socket, inputStream, socket, socket.getOutputStream(), listener));
-        executorService.submit(new StreamPipe(socket, socket.getInputStream(), this.socket, outputStream, listener));
+        StreamSocket s1 = StreamSocket.forSocket(this.socket);
+        StreamSocket s2 = StreamSocket.forSocket(socket);
+        executorService.submit(new StreamPipe(s1, inputStream, s2, socket.getOutputStream(), listener));
+        executorService.submit(new StreamPipe(s2, socket.getInputStream(), s1, outputStream, listener));
     }
 
 }

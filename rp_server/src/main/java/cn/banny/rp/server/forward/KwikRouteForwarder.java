@@ -1,6 +1,7 @@
 package cn.banny.rp.server.forward;
 
 import cn.banny.rp.ReverseProxy;
+import cn.banny.rp.forward.QuicSocket;
 import cn.banny.rp.forward.RouteForwarder;
 import cn.banny.rp.forward.StreamSocket;
 import cn.banny.rp.server.AbstractRoute;
@@ -24,20 +25,20 @@ import java.util.concurrent.Exchanger;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForwarder, Runnable {
+class KwikRouteForwarder extends AbstractChannelForwarder implements RouteForwarder, Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(NewBIORouteForwarder.class);
+    private static final Logger log = LoggerFactory.getLogger(KwikRouteForwarder.class);
 
     private Socket socket;
-    private final NewBIOPortForwarder forwarderListener;
+    private final KwikPortForwarder forwarderListener;
     private final ExecutorService executorService;
-    private final Exchanger<Socket> exchanger;
+    private final Exchanger<QuicSocket> exchanger;
     private final AbstractRoute route;
     private final ByteBuffer startProxyBuffer;
     private final int exchangerKey;
 
-    NewBIORouteForwarder(Socket socket, NewBIOPortForwarder forwarderListener, AbstractRoute route, String host, int port, ExecutorService executorService,
-                         int listenPort) {
+    KwikRouteForwarder(Socket socket, KwikPortForwarder forwarderListener, AbstractRoute route, String host, int port, ExecutorService executorService,
+                       int listenPort) {
         this.socket = socket;
         this.forwarderListener = forwarderListener;
         this.executorService = executorService;
@@ -58,7 +59,7 @@ class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForw
         ByteBuffer buffer = ByteBuffer.allocate(16 + host.length() + 16);
         buffer.order(ByteOrder.BIG_ENDIAN);
         buffer.position(4);
-        buffer.put((byte) 0x1c);
+        buffer.put((byte) 0x1d);
         buffer.putShort((short) listenPort);
         ReverseProxy.writeUTF(buffer, host);
         buffer.putShort((short) port);
@@ -69,14 +70,14 @@ class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForw
 
     @Override
     public void run() {
-        log.debug("start accept channel socket");
+        log.debug("start accept kwik socket");
         DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
         route.sendRequest(startProxyBuffer);
-        try (Socket client = exchanger.exchange(null, 30, TimeUnit.SECONDS);
+        try (QuicSocket client = exchanger.exchange(null, 30, TimeUnit.SECONDS);
              Socket server = this.socket) {
             this.socket = null;
-            String threadName = dateFormat.format(new Date()) + "NewBIORouteForwarder " +
-                    client.getRemoteSocketAddress() + " => " + server.getRemoteSocketAddress();
+            String threadName = dateFormat.format(new Date()) + "KwikRouteForwarder " +
+                    client.getStreamId() + " => " + server.getRemoteSocketAddress();
             startCountDownStreamForward(client, server, threadName, executorService);
         } catch (IOException e) {
             log.debug("start forward failed: socket={}", socket, e);
@@ -87,16 +88,15 @@ class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForw
         }
     }
 
-    static void startCountDownStreamForward(Socket client, Socket server, String threadName, ExecutorService executorService) throws IOException, InterruptedException {
+    private static void startCountDownStreamForward(QuicSocket client, Socket server, String threadName, ExecutorService executorService) throws IOException, InterruptedException {
         try (InputStream serverIn = server.getInputStream();
              OutputStream serverOut = server.getOutputStream();
              InputStream clientIn = client.getInputStream();
              OutputStream clientOut = client.getOutputStream()) {
             CountDownShutdownListener listener = new CountDownShutdownListener(threadName);
-            StreamSocket s1 = StreamSocket.forSocket(server);
-            StreamSocket s2 = StreamSocket.forSocket(client);
-            executorService.submit(new StreamPipe(s1, serverIn, s2, clientOut, listener));
-            executorService.submit(new StreamPipe(s2, clientIn, s1, serverOut, listener));
+            StreamSocket serverStreamSocket = StreamSocket.forSocket(server);
+            executorService.submit(new StreamPipe(serverStreamSocket, serverIn, client, clientOut, listener));
+            executorService.submit(new StreamPipe(client, clientIn, serverStreamSocket, serverOut, listener));
             listener.waitCountDown();
         }
     }

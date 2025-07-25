@@ -21,7 +21,7 @@ public abstract class AbstractPortForwarder extends ForwarderAware implements Po
 	private static final Logger log = LoggerFactory.getLogger(AbstractPortForwarder.class);
 
 	private final boolean bindLocal;
-	private final int inPort;
+	protected final int inPort;
 	final String outHost;
 	final int outPort;
 	protected final AbstractRoute route;

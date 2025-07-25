@@ -1,12 +1,12 @@
 package cn.banny.rp.socks.bio;
 
-import java.net.Socket;
+import cn.banny.rp.forward.StreamSocket;
 
 public interface ShutdownListener {
 
     void onStreamStart();
-    void onShutdownInput(Socket socket);
-    void onShutdownOutput(Socket socket);
+    void onShutdownInput(StreamSocket socket);
+    void onShutdownOutput(StreamSocket socket);
     void onStreamEnd();
     boolean needShutdown();
 

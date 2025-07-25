@@ -1,10 +1,9 @@
 package cn.banny.rp.socks.bio;
 
 import cn.banny.rp.ReverseProxy;
+import cn.banny.rp.forward.StreamSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.Socket;
 
 public class SocksShutdownListener implements ShutdownListener {
 
@@ -16,7 +15,7 @@ public class SocksShutdownListener implements ShutdownListener {
         this.threadName = threadName;
     }
 
-    private Socket in, out;
+    private StreamSocket in, out;
 
     @Override
     public void onStreamStart() {
@@ -36,7 +35,7 @@ public class SocksShutdownListener implements ShutdownListener {
     }
 
     @Override
-    public synchronized void onShutdownInput(Socket socket) {
+    public synchronized void onShutdownInput(StreamSocket socket) {
         if (socket == out) {
             log.debug("onShutdownInput close socket: {}", socket);
             ReverseProxy.closeQuietly(socket);
@@ -46,7 +45,7 @@ public class SocksShutdownListener implements ShutdownListener {
     }
 
     @Override
-    public synchronized void onShutdownOutput(Socket socket) {
+    public synchronized void onShutdownOutput(StreamSocket socket) {
         if (socket == in) {
             log.debug("onShutdownOutput close socket: {}", socket);
             ReverseProxy.closeQuietly(socket);

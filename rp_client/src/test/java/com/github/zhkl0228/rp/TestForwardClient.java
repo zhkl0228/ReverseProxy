@@ -19,7 +19,7 @@ public class TestForwardClient {
         reverseProxyClient.setAuthListener(new AuthListener() {
             @Override
             public boolean onAuthResponse(ReverseProxyClient client, AuthResult authResult) {
-                client.requestForward(8088, "3", 8080);
+                client.requestForward(8088, "4", 8080);
                 return false;
             }
             @Override
