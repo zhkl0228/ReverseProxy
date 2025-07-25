@@ -508,6 +508,7 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		private int connectTimeoutInMillis;
 		@Override
 		public void run() {
+			log.debug("Start proxy starter: NewBIO={}, server={}:{}", uuid != null, serverHost, listenPort);
 			DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
 			StringBuilder builder = new StringBuilder(dateFormat.format(new Date())).append("ProxyStarter ");
 			builder.append(serverHost).append(":").append(listenPort).append(" => ").append(host).append(":").append(port);

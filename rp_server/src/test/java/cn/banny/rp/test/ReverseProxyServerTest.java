@@ -56,7 +56,7 @@ public class ReverseProxyServerTest {
 
 		MinaReverseProxyServer server = new MinaReverseProxyServer();
 		server.setListenPort(2016);
-		server.setUseSSL(false);
+		server.setUseSSL(true);
 		AbstractServerHandler<?> handler = new MinaServerHandler();
 		handler.setReconnect(true);
 		server.setHandler(handler);

@@ -28,7 +28,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.4.1</version>
+                        <version>3.5.1</version>
                         <executions>
                             <execution>
                                 <phase>test</phase>
@@ -72,6 +72,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>4.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.kwik</groupId>
+            <artifactId>kwik</artifactId>
+            <version>0.10.3</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
