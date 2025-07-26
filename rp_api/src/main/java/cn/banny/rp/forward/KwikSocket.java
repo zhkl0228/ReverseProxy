@@ -66,6 +66,5 @@ public class KwikSocket extends StreamSocket implements Closeable {
 
     @Override
     public void close() throws IOException {
-        connection.close();
     }
 }

@@ -60,6 +60,7 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
             ServerConnectionConfig serverConnectionConfig = ServerConnectionConfig.builder()
                     .maxOpenPeerInitiatedBidirectionalStreams(Short.MAX_VALUE)
                     .maxOpenPeerInitiatedUnidirectionalStreams(Short.MAX_VALUE)
+                    .maxIdleTimeoutInSeconds(60 * 30)
                     .build();
             ServerConnector.Builder builder = ServerConnector.builder();
             builder.withKeyStore(ks, "rp_server", KEY_PASSWORD.toCharArray());
@@ -75,7 +76,6 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
                     .withConfiguration(serverConnectionConfig)
                     .withLogger(serverLogger)
                     .build();
-
             serverConnector.registerApplicationProtocol(APPLICATION_PROTOCOL, this);
             serverConnector.start();
         } catch (IOException e) {
@@ -110,7 +110,7 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
         return new ApplicationProtocolConnection() {
             @Override
             public void acceptPeerInitiatedStream(tech.kwik.core.QuicStream serverStream) {
-                log.debug("acceptPeerInitiatedStream serverStream={}", serverStream);
+                log.debug("acceptPeerInitiatedStream serverConnection={}, serverStream={}", serverConnection, serverStream);
                 executorService.submit(new AcceptPeerInitiatedStream(serverConnection, serverStream));
             }
         };
@@ -138,9 +138,8 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
                 }
             } catch(Throwable t) {
                 t.printStackTrace(System.err);
-                log.debug("acceptPeerInitiatedStream failed.", t);
+                log.warn("acceptPeerInitiatedStream failed.", t);
                 ReverseProxy.closeQuietly(inputStream);
-                serverConnection.close();
             }
         }
     }

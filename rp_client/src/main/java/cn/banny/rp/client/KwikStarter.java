@@ -1,7 +1,6 @@
 package cn.banny.rp.client;
 
 import cn.banny.rp.ReverseProxy;
-import cn.banny.rp.forward.PortForwarder;
 import cn.banny.rp.forward.KwikSocket;
 import cn.banny.rp.forward.StreamSocket;
 import cn.banny.rp.socks.bio.ShutdownListener;
@@ -10,17 +9,13 @@ import cn.banny.rp.socks.bio.StreamPipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.kwik.core.QuicClientConnection;
-import tech.kwik.core.log.NullLogger;
-import tech.kwik.core.log.SysOutLogger;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -28,17 +23,15 @@ class KwikStarter implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(KwikStarter.class);
 
-    static {
-        System.setProperty("tech.kwik.core.no-security-warnings", "true");
-    }
-
+    private final QuicClientConnection connection;
     private final String serverHost;
     private final int listenPort;
     private final String host;
     private final int port;
     private final byte[] uuid;
 
-    KwikStarter(String serverHost, int listenPort, String host, int port, byte[] uuid) {
+    KwikStarter(QuicClientConnection connection, String serverHost, int listenPort, String host, int port, byte[] uuid) {
+        this.connection = connection;
         this.serverHost = serverHost;
         this.listenPort = listenPort;
         this.host = host;
@@ -61,39 +54,26 @@ class KwikStarter implements Runnable {
         OutputStream clientOut = null;
         KwikSocket server = null;
         try {
-            QuicClientConnection.Builder builder = QuicClientConnection.newBuilder();
-            builder.preferIPv4();
-            builder.noServerCertificateCheck();
-            builder.applicationProtocol(PortForwarder.APPLICATION_PROTOCOL);
-            tech.kwik.core.log.Logger clientLogger;
-            if (log.isDebugEnabled()) {
-                clientLogger = new SysOutLogger();
-                clientLogger.logDebug(true);
-            } else {
-                clientLogger = new NullLogger();
-            }
-            QuicClientConnection connection = builder
-                    .uri(URI.create(String.format("https://%s:%d", serverHost, listenPort)))
-                    .logger(clientLogger)
-                    .connectTimeout(Duration.ofSeconds(15))
-                    .build();
-            connection.connect();
+            log.debug("Try open kwik stream");
+            long start = System.currentTimeMillis();
             tech.kwik.core.QuicStream clientStream = connection.createStream(true);
             server = new KwikSocket(connection, clientStream);
-
             serverOut = clientStream.getOutputStream();
             if (uuid != null) {
                 serverOut.write(uuid);
                 serverOut.flush();
             }
+            serverIn = server.getInputStream();
+            long connectServerOffset = System.currentTimeMillis() - start;
 
             client = new Socket();
             client.setSoTimeout((int) TimeUnit.DAYS.toMillis(1));
             client.connect(new InetSocketAddress(host, port), 3000);
-
-            serverIn = server.getInputStream();
             clientIn = client.getInputStream();
             clientOut = client.getOutputStream();
+            long connectClientOffset = System.currentTimeMillis() - start;
+            log.debug("Connect kwik {}:{}: connectServerOffset={}ms, connectClientOffset={}ms, clientStream={}", serverHost, listenPort, connectServerOffset, connectClientOffset, clientStream);
+
             ShutdownListener listener = new SocksShutdownListener(null);
             StreamSocket clientStreamSocket = StreamSocket.forSocket(client);
             new Thread(new StreamPipe(server, serverIn, clientStreamSocket, clientOut, listener), threadName).start();
