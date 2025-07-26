@@ -5,12 +5,12 @@
     <parent>
         <artifactId>rp-parent</artifactId>
         <groupId>com.github.zhkl0228</groupId>
-        <version>1.0.17</version>
+        <version>2.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>rp-client</artifactId>
-    <version>1.0.17</version>
+    <version>2.0.0</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -19,7 +19,7 @@
         <dependency>
             <groupId>com.github.zhkl0228</groupId>
             <artifactId>rp-api</artifactId>
-            <version>1.0.17</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
