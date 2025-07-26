@@ -1,8 +1,8 @@
 package cn.banny.rp.server.forward;
 
 import cn.banny.rp.ReverseProxy;
+import cn.banny.rp.forward.KwikSocket;
 import cn.banny.rp.forward.PortForwarder;
-import cn.banny.rp.forward.QuicSocket;
 import cn.banny.rp.forward.RouteForwarder;
 import cn.banny.rp.server.AbstractRoute;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
@@ -21,7 +21,6 @@ import tech.kwik.core.server.ServerConnector;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
@@ -43,7 +42,6 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
     private boolean canStop;
     private ExecutorService executorService;
     private ServerSocket serverSocket;
-    private DatagramSocket datagramSocket;
     private ServerConnector serverConnector;
 
     @Override
@@ -72,10 +70,8 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
             } else {
                 serverLogger = new NullLogger();
             }
-            datagramSocket = new DatagramSocket(inPort);
             serverConnector = builder
-                    .withPort(1) // placeholder
-                    .withSocket(datagramSocket)
+                    .withPort(inPort)
                     .withConfiguration(serverConnectionConfig)
                     .withLogger(serverLogger)
                     .build();
@@ -90,8 +86,7 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
         }
 
         newThread(this).start();
-        listenPort = datagramSocket.getLocalPort();
-        return listenPort;
+        return inPort;
     }
 
     @Override
@@ -101,44 +96,43 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
         if (serverConnector != null) {
             serverConnector.close();
         }
-        ReverseProxy.closeQuietly(datagramSocket);
         for(RouteForwarder forwarder : getForwarders()) {
             ReverseProxy.closeQuietly(forwarder);
         }
         executorService.shutdown();
     }
 
-    final Map<Integer, Exchanger<QuicSocket>> exchangerMap = new PassiveExpiringMap<>(1, TimeUnit.MINUTES);
+    final Map<Integer, Exchanger<KwikSocket>> exchangerMap = new PassiveExpiringMap<>(1, TimeUnit.MINUTES);
 
     @Override
-    public ApplicationProtocolConnection createConnection(String protocol, final QuicConnection quicConnection) {
+    public ApplicationProtocolConnection createConnection(String protocol, final QuicConnection serverConnection) {
         log.debug("createConnection protocol={}", protocol);
         return new ApplicationProtocolConnection() {
             @Override
             public void acceptPeerInitiatedStream(tech.kwik.core.QuicStream serverStream) {
                 log.debug("acceptPeerInitiatedStream serverStream={}", serverStream);
-                executorService.submit(new AcceptPeerInitiatedStream(quicConnection, serverStream));
+                executorService.submit(new AcceptPeerInitiatedStream(serverConnection, serverStream));
             }
         };
     }
 
     private class AcceptPeerInitiatedStream implements Runnable {
-        private final QuicConnection quicConnection;
-        private final QuicStream quicStream;
-        AcceptPeerInitiatedStream(QuicConnection quicConnection, QuicStream quicStream) {
-            this.quicConnection = quicConnection;
-            this.quicStream = quicStream;
+        private final QuicConnection serverConnection;
+        private final QuicStream serverStream;
+        AcceptPeerInitiatedStream(QuicConnection serverConnection, QuicStream serverStream) {
+            this.serverConnection = serverConnection;
+            this.serverStream = serverStream;
         }
         @Override
         public void run() {
             InputStream inputStream = null;
             try {
-                inputStream = quicStream.getInputStream();
+                inputStream = serverStream.getInputStream();
                 byte[] uuid = new byte[16];
                 new DataInputStream(inputStream).readFully(uuid);
-                Exchanger<QuicSocket> exchanger = exchangerMap.remove(Arrays.hashCode(uuid));
+                Exchanger<KwikSocket> exchanger = exchangerMap.remove(Arrays.hashCode(uuid));
                 if (exchanger != null) {
-                    exchanger.exchange(new QuicSocket(quicConnection, quicStream), 5, TimeUnit.SECONDS);
+                    exchanger.exchange(new KwikSocket(serverConnection, serverStream), 5, TimeUnit.SECONDS);
                 } else {
                     throw new IllegalStateException("No exchanger for uuid: " + Arrays.toString(uuid));
                 }
@@ -146,7 +140,7 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
                 t.printStackTrace(System.err);
                 log.debug("acceptPeerInitiatedStream failed.", t);
                 ReverseProxy.closeQuietly(inputStream);
-                quicConnection.close();
+                serverConnection.close();
             }
         }
     }
@@ -171,6 +165,6 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
     }
 
     private RouteForwarder createForward(Socket socket) {
-        return new KwikRouteForwarder(socket, this, route, outHost, outPort, executorService, datagramSocket.getLocalPort());
+        return new KwikRouteForwarder(socket, this, route, outHost, outPort, executorService, inPort);
     }
 }

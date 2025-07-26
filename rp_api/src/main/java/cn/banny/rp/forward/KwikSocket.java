@@ -1,19 +1,24 @@
 package cn.banny.rp.forward;
 
+import tech.kwik.core.QuicClientConnection;
 import tech.kwik.core.QuicConnection;
 import tech.kwik.core.QuicConstants;
 import tech.kwik.core.QuicStream;
+import tech.kwik.core.server.ServerConnection;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
-public class QuicSocket extends StreamSocket implements Closeable {
-    final QuicConnection connection;
-    final QuicStream stream;
+public class KwikSocket extends StreamSocket implements Closeable {
 
-    public QuicSocket(QuicConnection connection, QuicStream stream) {
+    private final QuicConnection connection;
+    private final QuicStream stream;
+
+    public KwikSocket(QuicConnection connection, QuicStream stream) {
         this.connection = connection;
         this.stream = stream;
     }
@@ -46,8 +51,17 @@ public class QuicSocket extends StreamSocket implements Closeable {
         return stream.getOutputStream();
     }
 
-    public int getStreamId() {
-        return stream.getStreamId();
+    @Override
+    public SocketAddress getRemoteSocketAddress() {
+        if (connection instanceof ServerConnection) {
+            ServerConnection serverConnection = (ServerConnection) connection;
+            return new InetSocketAddress(serverConnection.getInitialClientAddress(), 0);
+        } else if (connection instanceof QuicClientConnection) {
+            QuicClientConnection quicClientConnection = (QuicClientConnection) connection;
+            return quicClientConnection.getServerAddress();
+        } else {
+            throw new IllegalStateException("connection=" + connection);
+        }
     }
 
     @Override

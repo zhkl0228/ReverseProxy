@@ -1,7 +1,7 @@
 package cn.banny.rp.server.forward;
 
 import cn.banny.rp.ReverseProxy;
-import cn.banny.rp.forward.QuicSocket;
+import cn.banny.rp.forward.KwikSocket;
 import cn.banny.rp.forward.RouteForwarder;
 import cn.banny.rp.forward.StreamSocket;
 import cn.banny.rp.server.AbstractRoute;
@@ -32,7 +32,7 @@ class KwikRouteForwarder extends AbstractChannelForwarder implements RouteForwar
     private Socket socket;
     private final KwikPortForwarder forwarderListener;
     private final ExecutorService executorService;
-    private final Exchanger<QuicSocket> exchanger;
+    private final Exchanger<KwikSocket> exchanger;
     private final AbstractRoute route;
     private final ByteBuffer startProxyBuffer;
     private final int exchangerKey;
@@ -71,13 +71,13 @@ class KwikRouteForwarder extends AbstractChannelForwarder implements RouteForwar
     @Override
     public void run() {
         log.debug("start accept kwik socket");
-        DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
         route.sendRequest(startProxyBuffer);
-        try (QuicSocket client = exchanger.exchange(null, 30, TimeUnit.SECONDS);
+        try (KwikSocket client = exchanger.exchange(null, 15, TimeUnit.SECONDS);
              Socket server = this.socket) {
             this.socket = null;
+            DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
             String threadName = dateFormat.format(new Date()) + "KwikRouteForwarder " +
-                    client.getStreamId() + " => " + server.getRemoteSocketAddress();
+                    client.getRemoteSocketAddress() + " => " + server.getRemoteSocketAddress();
             startCountDownStreamForward(client, server, threadName, executorService);
         } catch (IOException e) {
             log.debug("start forward failed: socket={}", socket, e);
@@ -88,7 +88,7 @@ class KwikRouteForwarder extends AbstractChannelForwarder implements RouteForwar
         }
     }
 
-    private static void startCountDownStreamForward(QuicSocket client, Socket server, String threadName, ExecutorService executorService) throws IOException, InterruptedException {
+    private static void startCountDownStreamForward(KwikSocket client, Socket server, String threadName, ExecutorService executorService) throws IOException, InterruptedException {
         try (InputStream serverIn = server.getInputStream();
              OutputStream serverOut = server.getOutputStream();
              InputStream clientIn = client.getInputStream();

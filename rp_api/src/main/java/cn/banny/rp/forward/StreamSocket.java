@@ -3,6 +3,7 @@ package cn.banny.rp.forward;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 
 public abstract class StreamSocket implements Closeable {
@@ -10,6 +11,7 @@ public abstract class StreamSocket implements Closeable {
     public abstract void shutdownInput() throws IOException;
     public abstract void shutdownOutput() throws IOException;
     public abstract int getReceiveBufferSize() throws SocketException;
+    public abstract SocketAddress getRemoteSocketAddress();
 
     public static StreamSocket forSocket(final Socket socket) {
         return new SocketWrapper(socket);
@@ -40,6 +42,11 @@ public abstract class StreamSocket implements Closeable {
         @Override
         public int getReceiveBufferSize() throws SocketException {
             return socket.getReceiveBufferSize();
+        }
+
+        @Override
+        public SocketAddress getRemoteSocketAddress() {
+            return socket.getRemoteSocketAddress();
         }
 
         @Override

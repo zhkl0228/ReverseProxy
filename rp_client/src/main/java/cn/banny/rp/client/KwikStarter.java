@@ -2,7 +2,7 @@ package cn.banny.rp.client;
 
 import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.forward.PortForwarder;
-import cn.banny.rp.forward.QuicSocket;
+import cn.banny.rp.forward.KwikSocket;
 import cn.banny.rp.forward.StreamSocket;
 import cn.banny.rp.socks.bio.ShutdownListener;
 import cn.banny.rp.socks.bio.SocksShutdownListener;
@@ -59,7 +59,7 @@ class KwikStarter implements Runnable {
         OutputStream serverOut = null;
         InputStream clientIn = null;
         OutputStream clientOut = null;
-        QuicSocket server = null;
+        KwikSocket server = null;
         try {
             QuicClientConnection.Builder builder = QuicClientConnection.newBuilder();
             builder.preferIPv4();
@@ -79,7 +79,7 @@ class KwikStarter implements Runnable {
                     .build();
             connection.connect();
             tech.kwik.core.QuicStream clientStream = connection.createStream(true);
-            server = new QuicSocket(connection, clientStream);
+            server = new KwikSocket(connection, clientStream);
 
             serverOut = clientStream.getOutputStream();
             if (uuid != null) {
