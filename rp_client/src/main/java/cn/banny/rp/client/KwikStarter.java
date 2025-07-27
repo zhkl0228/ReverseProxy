@@ -58,7 +58,7 @@ class KwikStarter implements Runnable {
             long start = System.currentTimeMillis();
             tech.kwik.core.QuicStream clientStream = connection.createStream(true);
             server = new KwikSocket(connection, clientStream);
-            serverOut = clientStream.getOutputStream();
+            serverOut = server.getOutputStream();
             if (uuid != null) {
                 serverOut.write(uuid);
                 serverOut.flush();

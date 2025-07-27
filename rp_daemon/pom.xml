@@ -11,6 +11,7 @@
 
     <artifactId>rp-daemon</artifactId>
     <version>2.0.0</version>
+    <name>ReverseProxy daemon</name>
     <build>
         <plugins>
             <plugin>
