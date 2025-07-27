@@ -42,9 +42,8 @@ class KwikStarter implements Runnable {
     @Override
     public void run() {
         log.debug("Start kwik starter: server={}:{}", serverHost, listenPort);
-        DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
-        String threadName = dateFormat.format(new Date()) + "KwikStarter " +
-                serverHost + ":" + listenPort + " => " + host + ":" + port;
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String threadName = String.format("[%s]KwikStarter@0x%x %s:%d => %s:%d", dateFormat.format(new Date()), hashCode() & 0xffffffffL, serverHost, listenPort, host, port);
         Thread.currentThread().setName(threadName);
 
         Socket client = null;
@@ -76,8 +75,9 @@ class KwikStarter implements Runnable {
 
             ShutdownListener listener = new SocksShutdownListener(null);
             StreamSocket clientStreamSocket = StreamSocket.forSocket(client);
-            new Thread(new StreamPipe(server, serverIn, clientStreamSocket, clientOut, listener), threadName).start();
-            new Thread(new StreamPipe(clientStreamSocket, clientIn, server, serverOut, listener), threadName).start();
+            String name = threadName + " " + clientStream;
+            new Thread(new StreamPipe(server, serverIn, clientStreamSocket, clientOut, listener), name).start();
+            new Thread(new StreamPipe(clientStreamSocket, clientIn, server, serverOut, listener), name).start();
         } catch (Exception e) {
             ReverseProxy.closeQuietly(serverIn);
             ReverseProxy.closeQuietly(clientIn);

@@ -34,8 +34,8 @@ public class KwikSocket extends StreamSocket implements Closeable {
     }
 
     @Override
-    public void shutdownOutput() {
-        stream.resetStream(QuicConstants.TransportErrorCode.NO_ERROR.value);
+    public void shutdownOutput() throws IOException {
+        close();
     }
 
     @Override
@@ -64,7 +64,13 @@ public class KwikSocket extends StreamSocket implements Closeable {
         }
     }
 
+    private boolean closed;
+
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
+        if (!closed) {
+            closed = true;
+            stream.resetStream(QuicConstants.TransportErrorCode.NO_ERROR.value);
+        }
     }
 }

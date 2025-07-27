@@ -126,20 +126,24 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
         @Override
         public void run() {
             InputStream inputStream = null;
+            KwikSocket  streamSocket = null;
             try {
                 inputStream = serverStream.getInputStream();
                 byte[] uuid = new byte[16];
                 new DataInputStream(inputStream).readFully(uuid);
                 Exchanger<KwikSocket> exchanger = exchangerMap.remove(Arrays.hashCode(uuid));
                 if (exchanger != null) {
-                    exchanger.exchange(new KwikSocket(serverConnection, serverStream), 5, TimeUnit.SECONDS);
+                    streamSocket = new KwikSocket(serverConnection, serverStream);
+                    exchanger.exchange(streamSocket, 5, TimeUnit.SECONDS);
                 } else {
                     throw new IllegalStateException("No exchanger for uuid: " + Arrays.toString(uuid));
                 }
             } catch(Throwable t) {
                 t.printStackTrace(System.err);
+
                 log.warn("acceptPeerInitiatedStream failed.", t);
                 ReverseProxy.closeQuietly(inputStream);
+                ReverseProxy.closeQuietly(streamSocket);
             }
         }
     }
@@ -157,6 +161,7 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
                 if (canStop) {
                     log.debug("Kwik.createForward", e);
                 } else {
+                    e.printStackTrace(System.err);
                     log.warn("Kwik.createForward", e);
                 }
             }

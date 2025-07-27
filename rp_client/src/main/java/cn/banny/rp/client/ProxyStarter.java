@@ -46,7 +46,7 @@ class ProxyStarter implements Runnable {
     public void run() {
         log.debug("Start proxy starter: NewBIO={}, server={}:{}", uuid != null, serverHost, listenPort);
         DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
-        StringBuilder builder = new StringBuilder(dateFormat.format(new Date())).append("ProxyStarter ");
+        StringBuilder builder = new StringBuilder(dateFormat.format(new Date())).append(String.format("ProxyStarter@0x%x ", hashCode() & 0xffffffffL));
         builder.append(serverHost).append(":").append(listenPort).append(" => ").append(host).append(":").append(port);
         if (connectTimeoutInMillis > 0) {
             builder.append(" with connectTimeout=").append(connectTimeoutInMillis);
