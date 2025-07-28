@@ -22,7 +22,6 @@ import java.util.concurrent.Executors;
  * @author zhkl0228
  *
  */
-@Deprecated
 public class AIOProxyServer extends AbstractProxyServer<AsynchronousSocketChannel> implements ProxyServer {
 	
 	private static final Logger log = LoggerFactory.getLogger(AIOProxyServer.class);
@@ -44,7 +43,7 @@ public class AIOProxyServer extends AbstractProxyServer<AsynchronousSocketChanne
 			@Override
 			public void completed(AsynchronousSocketChannel result,
 					Void attachment) {
-				server.accept(null, this);
+				server.accept(attachment, this);
 
 				new AIOSocksHandler(AIOProxyServer.this, ByteBuffer.allocate(128), result, authHandler, supportV4);
 			}

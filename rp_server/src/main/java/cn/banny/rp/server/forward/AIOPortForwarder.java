@@ -44,7 +44,7 @@ class AIOPortForwarder extends AbstractPortForwarder implements PortForwarder {
 			@Override
 			public void completed(AsynchronousSocketChannel result,
 					Void attachment) {
-				server.accept(null, this);
+				server.accept(attachment, this);
 				AIORouteForwarder forwarder = createForward(result);
 				forwards.put(forwarder.hashCode(), forwarder);
 			}

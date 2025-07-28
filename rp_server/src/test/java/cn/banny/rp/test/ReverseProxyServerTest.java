@@ -8,8 +8,8 @@ import cn.banny.rp.server.ServerHandler;
 import cn.banny.rp.server.forward.PortForwarderType;
 import cn.banny.rp.server.mina.MinaReverseProxyServer;
 import cn.banny.rp.server.mina.MinaServerHandler;
+import cn.banny.rp.server.socks.AIOProxyServer;
 import cn.banny.rp.server.socks.AbstractProxyServer;
-import cn.banny.rp.server.socks.NIOProxyServer;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
@@ -68,7 +68,7 @@ public class ReverseProxyServerTest {
 			}
 		});
 
-		AbstractProxyServer<?> proxyServer = new NIOProxyServer(2017);
+		AbstractProxyServer<?> proxyServer = new AIOProxyServer(2017);
 		proxyServer.setHandler(handler);
 		proxyServer.setSupportV4(true);
 		try {

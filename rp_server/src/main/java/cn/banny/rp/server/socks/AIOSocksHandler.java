@@ -11,7 +11,6 @@ import java.nio.channels.CompletionHandler;
  * @author zhkl0228
  *
  */
-@Deprecated
 class AIOSocksHandler extends AbstractSocksHandler<AsynchronousSocketChannel> implements CompletionHandler<Integer, AsynchronousSocketChannel> {
 	
 	private final ByteBuffer readBuffer;

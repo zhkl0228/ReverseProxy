@@ -75,18 +75,8 @@ public class AIORouteForwarder extends AbstractRouteForwarder implements RouteFo
 			if(checkWrite && writing) {
 				return;
 			}
-			
-			ByteBuffer bb;
-			while((bb = bufferQueue.peek()) != null) {
-				if(writeBuffer.remaining() < bb.remaining()) {
-					break;
-				}
-				
-				writeBuffer.put(bb);
-				bufferQueue.poll();
-			}
 
-            log.debug("processWrite writeBuffer={}, queueSize={}", writeBuffer, bufferQueue.size());
+			processWrite(bufferQueue, writeBuffer);
 			writing = true;
 			writeBuffer.flip();
 			socket.write(writeBuffer, writeBuffer, new CompletionHandler<Integer, ByteBuffer>() {
@@ -109,6 +99,20 @@ public class AIORouteForwarder extends AbstractRouteForwarder implements RouteFo
 		} finally {
 			writeLock.unlock();
 		}
+	}
+
+	static void processWrite(Queue<ByteBuffer> bufferQueue, ByteBuffer writeBuffer) {
+		ByteBuffer bb;
+		while((bb = bufferQueue.peek()) != null) {
+			if(writeBuffer.remaining() < bb.remaining()) {
+				break;
+			}
+
+			writeBuffer.put(bb);
+			bufferQueue.poll();
+		}
+
+		log.debug("processWrite writeBuffer={}, queueSize={}", writeBuffer, bufferQueue.size());
 	}
 
 	/* (non-Javadoc)

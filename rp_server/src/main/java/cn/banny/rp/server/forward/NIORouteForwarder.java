@@ -133,18 +133,8 @@ public class NIORouteForwarder extends AbstractRouteForwarder implements
 			throws IOException {
 		try {
 			writeLock.lock();
-			ByteBuffer bb;
-			while((bb = bufferQueue.peek()) != null) {
-				if(writeBuffer.remaining() < bb.remaining()) {
-					break;
-				}
-				
-				writeBuffer.put(bb);
-				bufferQueue.poll();
-			}
-
-            log.debug("processWrite writeBuffer={}, queueSize={}", writeBuffer, bufferQueue.size());
-			writeBuffer.flip();
+            AIORouteForwarder.processWrite(bufferQueue, writeBuffer);
+            writeBuffer.flip();
 			session.write(writeBuffer);
 			
 			if(writeBuffer.hasRemaining() || !bufferQueue.isEmpty()) {
