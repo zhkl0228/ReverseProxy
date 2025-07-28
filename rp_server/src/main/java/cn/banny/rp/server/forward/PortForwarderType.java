@@ -7,17 +7,19 @@ import cn.banny.rp.server.AbstractRoute;
 
 public enum PortForwarderType implements ForwarderType {
 
-    @Deprecated
     BIO,
 
-    @Deprecated
     NIO,
 
+    /**
+     * 速度最快，最稳定
+     */
     AIO,
 
-    NewBIO,
-
-    Kwik;
+    /**
+     * 稳定，tomcat 重新部署不会断线
+     */
+    NewBIO;
 
     @Deprecated
     public PortForwarder startForward(boolean bindLocal, int port, String remoteHost,
@@ -31,8 +33,6 @@ public enum PortForwarderType implements ForwarderType {
                 return new AIOPortForwarder(bindLocal, port, remoteHost, remotePort, (AbstractRoute) route);
             case NewBIO:
                 return new NewBIOPortForwarder(bindLocal, port, remoteHost, remotePort, (AbstractRoute) route);
-            case Kwik:
-                return new KwikPortForwarder(bindLocal, port, remoteHost, remotePort, (AbstractRoute) route);
             default:
                 throw new UnsupportedOperationException("type=" + this);
         }

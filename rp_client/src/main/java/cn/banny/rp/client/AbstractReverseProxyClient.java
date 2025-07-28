@@ -313,9 +313,6 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 			case 0x1c:
 				parseStartNewProxy(packet);
 				break;
-			case 0x1d:
-				parseStartKwikProxy(packet);
-				break;
 			case 0x1b:
 				parseForwardSocket(packet);
 				break;
@@ -518,30 +515,6 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		new Thread(new ProxyStarter(this.host, listenPort, host, port, uuid, socksOverTls)).start();
 	}
 
-	static {
-		System.setProperty("tech.kwik.core.no-security-warnings", "true");
-	}
-
-	private final Map<String, KwikConnector> connectionMap = new ConcurrentHashMap<>();
-
-	private void parseStartKwikProxy(ByteBuffer in) throws IOException {
-		int listenPort = in.getShort() & 0xffff;
-		String host = ReverseProxy.readUTF(in);
-		int port = in.getShort() & 0xffff;
-		byte[] uuid = new byte[16];
-		in.get(uuid);
-
-		String key = this.host + ":" + listenPort;
-		synchronized (this) {
-			KwikConnector connector = connectionMap.get(key);
-			if (connector == null) {
-				connector = new KwikConnector(key, this.host, listenPort);
-				connectionMap.put(key, connector);
-			}
-			connector.start(host, port, uuid);
-		}
-	}
-
 	private final Map<Integer, PortForwardRequest> portForwardMap = new ConcurrentHashMap<>();
 	private long lastPortForwardRequestTime;
 
@@ -586,13 +559,6 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 	}
 
 	protected final void closeAllSocketProxies() {
-		synchronized (this) {
-			for(KwikConnector connector : connectionMap.values()) {
-				ReverseProxy.closeQuietly(connector);
-			}
-			connectionMap.clear();
-		}
-
 		portForwardMap.clear();
 		
 		for(SocketProxy proxy : socketMap.values()) {
