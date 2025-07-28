@@ -56,7 +56,7 @@ public class ReverseProxyServerTest {
 
 		MinaReverseProxyServer server = new MinaReverseProxyServer();
 		server.setListenPort(2016);
-		server.setUseSSL(true);
+		server.setUseSSL(false);
 		AbstractServerHandler<?> handler = new MinaServerHandler();
 		handler.setReconnect(true);
 		server.setHandler(handler);
@@ -137,7 +137,7 @@ public class ReverseProxyServerTest {
 				if("bind".equalsIgnoreCase(line) &&
 						route != null) {
 					try {
-						route.startForward(true, 8888, "scp66.3322.org", 31000, PortForwarderType.NIO);
+						route.startForward(true, 8888, "scp66.3322.org", 31000, PortForwarderType.AIO);
 					} catch(IOException e) {
 						e.printStackTrace(System.err);
 					}

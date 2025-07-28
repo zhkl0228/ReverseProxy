@@ -4,25 +4,21 @@ import cn.banny.rp.RequestConnect;
 import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.auth.AuthResult;
 import cn.banny.rp.forward.ForwarderType;
-import cn.banny.rp.forward.PortForwarder;
 import cn.banny.rp.handler.ExtDataHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tech.kwik.core.QuicClientConnection;
-import tech.kwik.core.log.NullLogger;
-import tech.kwik.core.log.SysOutLogger;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SocketChannel;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 import java.util.Queue;
@@ -526,77 +522,24 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 		System.setProperty("tech.kwik.core.no-security-warnings", "true");
 	}
 
-	private final Map<String, QuicClientConnection> clientConnectionMap = new ConcurrentHashMap<>();
-
-	private class KwikConnector implements Runnable {
-		private final String serverHost;
-		private final int listenPort;
-		private final String host;
-		private final int port;
-		private final byte[] uuid;
-		public KwikConnector(String serverHost, int listenPort, String host, int port, byte[] uuid) {
-			this.serverHost = serverHost;
-			this.listenPort = listenPort;
-			this.host = host;
-			this.port = port;
-			this.uuid = uuid;
-		}
-		@Override
-		public void run() {
-			synchronized (clientConnectionMap) {
-				String key = serverHost + ":" + listenPort;
-				QuicClientConnection quicClientConnection = clientConnectionMap.get(key);
-				if (quicClientConnection != null && !quicClientConnection.isConnected()) {
-					quicClientConnection.close();
-					quicClientConnection = null;
-					clientConnectionMap.remove(key);
-				}
-				log.debug("Check kwik {} connector: quicClientConnection={}, connectionSize={}", key, quicClientConnection, clientConnectionMap.size());
-				if (quicClientConnection == null) {
-					try {
-						QuicClientConnection.Builder builder = QuicClientConnection.newBuilder();
-						builder.preferIPv4();
-						builder.noServerCertificateCheck();
-						builder.applicationProtocol(PortForwarder.APPLICATION_PROTOCOL);
-						tech.kwik.core.log.Logger clientLogger;
-						if (log.isDebugEnabled()) {
-							clientLogger = new SysOutLogger();
-							clientLogger.logDebug(true);
-						} else {
-							clientLogger = new NullLogger();
-						}
-						log.debug("Try connect kwik: {}, connectionSize={}", key, clientConnectionMap.size());
-						long start = System.currentTimeMillis();
-						quicClientConnection = builder
-								.uri(URI.create(String.format("https://%s:%d", serverHost, listenPort)))
-								.logger(clientLogger)
-								.connectTimeout(Duration.ofSeconds(15))
-								.maxIdleTimeout(Duration.ofMinutes(30))
-								.build();
-						quicClientConnection.connect();
-						clientConnectionMap.put(key, quicClientConnection);
-						log.debug("Connect kwik: {}, offset={}ms", key, System.currentTimeMillis() - start);
-					} catch (Exception e) {
-						if (quicClientConnection != null) {
-							quicClientConnection.close();
-						}
-						log.warn("connect kwik: {}, connections={}", key, clientConnectionMap, e);
-						return;
-					}
-				}
-				new Thread(new KwikStarter(quicClientConnection, this.host, listenPort, host, port, uuid)).start();
-			}
-		}
-	}
+	private final Map<String, KwikConnector> connectionMap = new ConcurrentHashMap<>();
 
 	private void parseStartKwikProxy(ByteBuffer in) throws IOException {
 		int listenPort = in.getShort() & 0xffff;
 		String host = ReverseProxy.readUTF(in);
 		int port = in.getShort() & 0xffff;
-		byte[] uuid=  new byte[16];
+		byte[] uuid = new byte[16];
 		in.get(uuid);
 
-		new Thread(new KwikConnector(this.host, listenPort, host, port, uuid)).start();
+		String key = this.host + ":" + listenPort;
+		synchronized (this) {
+			KwikConnector connector = connectionMap.get(key);
+			if (connector == null) {
+				connector = new KwikConnector(key, this.host, listenPort);
+				connectionMap.put(key, connector);
+			}
+			connector.start(host, port, uuid);
+		}
 	}
 
 	private final Map<Integer, PortForwardRequest> portForwardMap = new ConcurrentHashMap<>();
@@ -643,10 +586,12 @@ public abstract class AbstractReverseProxyClient implements ReverseProxyClient {
 	}
 
 	protected final void closeAllSocketProxies() {
-		for(QuicClientConnection quicClientConnection : clientConnectionMap.values()) {
-			quicClientConnection.close();
+		synchronized (this) {
+			for(KwikConnector connector : connectionMap.values()) {
+				ReverseProxy.closeQuietly(connector);
+			}
+			connectionMap.clear();
 		}
-		clientConnectionMap.clear();
 
 		portForwardMap.clear();
 		

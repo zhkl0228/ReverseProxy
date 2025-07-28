@@ -5,6 +5,8 @@ import cn.banny.rp.client.AuthListener;
 import cn.banny.rp.client.DefaultReverseProxyClientFactory;
 import cn.banny.rp.client.ReverseProxyClient;
 import cn.banny.rp.client.ReverseProxyClientFactory;
+import cn.banny.rp.forward.ForwarderType;
+import cn.banny.rp.server.forward.PortForwarderType;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -15,11 +17,11 @@ public class TestForwardClient {
 
     public static void main(String[] args) throws Exception {
         ReverseProxyClientFactory factory = new DefaultReverseProxyClientFactory();
-        ReverseProxyClient reverseProxyClient = factory.createClient("localhost", 2016, true, TestForwardClient.class.getSimpleName());
+        ReverseProxyClient reverseProxyClient = factory.createClient("localhost", 2016, false, TestForwardClient.class.getSimpleName());
         reverseProxyClient.setAuthListener(new AuthListener() {
             @Override
             public boolean onAuthResponse(ReverseProxyClient client, AuthResult authResult) {
-                client.requestForward(8088, "4", 8080);
+                client.requestForward(8088, PortForwarderType.AIO, 8080);
                 return false;
             }
             @Override

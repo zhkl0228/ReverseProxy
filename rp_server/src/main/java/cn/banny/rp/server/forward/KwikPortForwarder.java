@@ -58,8 +58,8 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             ks.load(inputStream, STORE_PASSWORD.toCharArray());
             ServerConnectionConfig serverConnectionConfig = ServerConnectionConfig.builder()
-                    .maxOpenPeerInitiatedBidirectionalStreams(Short.MAX_VALUE)
-                    .maxOpenPeerInitiatedUnidirectionalStreams(Short.MAX_VALUE)
+                    .maxOpenPeerInitiatedBidirectionalStreams(PortForwarder.MAX_OPEN_BIDIRECTIONAL_STREAMS)
+                    .maxOpenPeerInitiatedUnidirectionalStreams(0)
                     .maxIdleTimeoutInSeconds(60 * 30)
                     .build();
             ServerConnector.Builder builder = ServerConnector.builder();
@@ -128,20 +128,20 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
             InputStream inputStream = null;
             KwikSocket  streamSocket = null;
             try {
-                inputStream = serverStream.getInputStream();
+                streamSocket = new KwikSocket(serverConnection, serverStream);
+                inputStream = streamSocket.getInputStream();
                 byte[] uuid = new byte[16];
                 new DataInputStream(inputStream).readFully(uuid);
                 Exchanger<KwikSocket> exchanger = exchangerMap.remove(Arrays.hashCode(uuid));
                 if (exchanger != null) {
-                    streamSocket = new KwikSocket(serverConnection, serverStream);
                     exchanger.exchange(streamSocket, 5, TimeUnit.SECONDS);
                 } else {
                     throw new IllegalStateException("No exchanger for uuid: " + Arrays.toString(uuid));
                 }
-            } catch(Throwable t) {
-                t.printStackTrace(System.err);
+            } catch(Throwable e) {
+                e.printStackTrace(System.out);
 
-                log.warn("acceptPeerInitiatedStream failed.", t);
+                log.warn("acceptPeerInitiatedStream failed.", e);
                 ReverseProxy.closeQuietly(inputStream);
                 ReverseProxy.closeQuietly(streamSocket);
             }
@@ -161,7 +161,7 @@ class KwikPortForwarder extends AbstractPortForwarder implements PortForwarder, 
                 if (canStop) {
                     log.debug("Kwik.createForward", e);
                 } else {
-                    e.printStackTrace(System.err);
+                    e.printStackTrace(System.out);
                     log.warn("Kwik.createForward", e);
                 }
             }

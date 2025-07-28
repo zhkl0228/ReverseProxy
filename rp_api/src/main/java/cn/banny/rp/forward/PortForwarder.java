@@ -10,6 +10,7 @@ import java.util.concurrent.ThreadFactory;
 public interface PortForwarder extends ForwarderListener, ThreadFactory {
 
 	String APPLICATION_PROTOCOL = "rp";
+	int MAX_OPEN_BIDIRECTIONAL_STREAMS = Short.MAX_VALUE;
 
 	String getOutHost();
 	int getOutPort();

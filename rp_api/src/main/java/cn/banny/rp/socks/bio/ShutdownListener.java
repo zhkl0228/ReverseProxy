@@ -6,8 +6,10 @@ public interface ShutdownListener {
 
     void onStreamStart();
     void onShutdownInput(StreamSocket socket);
-    void onShutdownOutput(StreamSocket socket);
+    boolean onShutdownOutput(StreamSocket socket);
     void onStreamEnd();
     boolean needShutdown();
+
+    default void onStreamClosed() {}
 
 }

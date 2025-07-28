@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+@Deprecated
 public class CountDownShutdownListener implements ShutdownListener {
 
     private final CountDownLatch countDownLatch = new CountDownLatch(2);
@@ -32,7 +33,8 @@ public class CountDownShutdownListener implements ShutdownListener {
     }
 
     @Override
-    public void onShutdownOutput(StreamSocket socket) {
+    public boolean onShutdownOutput(StreamSocket socket) {
+        return false;
     }
 
     public void waitCountDown() throws InterruptedException, IOException {

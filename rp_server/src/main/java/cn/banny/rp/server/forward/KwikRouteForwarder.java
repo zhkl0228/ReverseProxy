@@ -5,15 +5,10 @@ import cn.banny.rp.forward.KwikSocket;
 import cn.banny.rp.forward.RouteForwarder;
 import cn.banny.rp.forward.StreamSocket;
 import cn.banny.rp.server.AbstractRoute;
-import cn.banny.rp.socks.bio.ShutdownListener;
-import cn.banny.rp.socks.bio.SocksShutdownListener;
-import cn.banny.rp.socks.bio.StreamPipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -50,9 +45,10 @@ class KwikRouteForwarder extends AbstractChannelForwarder implements RouteForwar
         ByteBuffer buffer = ByteBuffer.allocate(16);
         buffer.putLong(uuid.getMostSignificantBits());
         buffer.putLong(uuid.getLeastSignificantBits());
-        this.exchangerKey = Arrays.hashCode(buffer.array());
+        byte[] bytes = buffer.array();
+        this.exchangerKey = Arrays.hashCode(bytes);
         forwarderListener.exchangerMap.put(exchangerKey, exchanger);
-        startProxyBuffer = createStartProxy(listenPort, host, port, buffer.array());
+        startProxyBuffer = createStartProxy(listenPort, host, port, bytes);
         executorService.submit(this);
     }
 
@@ -80,7 +76,7 @@ class KwikRouteForwarder extends AbstractChannelForwarder implements RouteForwar
             DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
             String threadName = dateFormat.format(new Date()) + String.format("KwikRouteForwarder @0x%x", hashCode() & 0xffffffffL) +
                     client.getRemoteSocketAddress() + " => " + server.getRemoteSocketAddress();
-            startStreamForward(client, server, threadName, executorService);
+            NewBIORouteForwarder.startStreamForward(client, StreamSocket.forSocket(server), threadName, executorService);
             this.socket = null;
         } catch (IOException e) {
             log.debug("start forward failed: socket={}", socket, e);
@@ -90,27 +86,6 @@ class KwikRouteForwarder extends AbstractChannelForwarder implements RouteForwar
             ReverseProxy.closeQuietly(client);
         } finally {
             close();
-        }
-    }
-
-    private static void startStreamForward(KwikSocket client, Socket server, String threadName, ExecutorService executorService) throws IOException {
-        InputStream serverIn = null, clientIn = null;
-        OutputStream serverOut = null, clientOut = null;
-        try {
-            ShutdownListener listener = new SocksShutdownListener(threadName);
-            StreamSocket serverStreamSocket = StreamSocket.forSocket(server);
-            serverIn = server.getInputStream();
-            serverOut = server.getOutputStream();
-            clientIn = client.getInputStream();
-            clientOut = client.getOutputStream();
-            executorService.submit(new StreamPipe(serverStreamSocket, serverIn, client, clientOut, listener));
-            executorService.submit(new StreamPipe(client, clientIn, serverStreamSocket, serverOut, listener));
-        } catch (IOException e) {
-            ReverseProxy.closeQuietly(serverIn);
-            ReverseProxy.closeQuietly(clientIn);
-            ReverseProxy.closeQuietly(serverOut);
-            ReverseProxy.closeQuietly(clientOut);
-            throw e;
         }
     }
 

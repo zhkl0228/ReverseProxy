@@ -127,7 +127,7 @@ public abstract class AbstractServerHandler<T> implements ServerHandler {
 	}
 
 	private void parseRequestForward(ByteBuffer in, AbstractRoute route) throws IOException {
-		PortForwarderType type = PortForwarderType.BIO;
+		PortForwarderType type = PortForwarderType.AIO;
 		int port = in.getShort() & 0xffff;
 		String remoteHost = ReverseProxy.readUTF(in);
 		boolean bindLocal = false;

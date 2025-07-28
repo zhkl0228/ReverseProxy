@@ -4,7 +4,8 @@ import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.forward.RouteForwarder;
 import cn.banny.rp.forward.StreamSocket;
 import cn.banny.rp.server.AbstractRoute;
-import cn.banny.rp.socks.bio.CountDownShutdownListener;
+import cn.banny.rp.socks.bio.ShutdownListener;
+import cn.banny.rp.socks.bio.SocksShutdownListener;
 import cn.banny.rp.socks.bio.StreamPipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,32 +73,42 @@ class NewBIORouteForwarder extends AbstractChannelForwarder implements RouteForw
         log.debug("start accept channel socket");
         DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
         route.sendRequest(startProxyBuffer);
-        try (Socket client = exchanger.exchange(null, 30, TimeUnit.SECONDS);
-             Socket server = this.socket) {
-            this.socket = null;
-            String threadName = dateFormat.format(new Date()) + "NewBIORouteForwarder " +
+        Socket client = null;
+        try {
+            client = exchanger.exchange(null, 30, TimeUnit.SECONDS);
+            Socket server = this.socket;
+            String threadName = dateFormat.format(new Date()) + String.format("NewBIORouteForwarder@0x%x ", hashCode() & 0xffffffffL) +
                     client.getRemoteSocketAddress() + " => " + server.getRemoteSocketAddress();
-            startCountDownStreamForward(client, server, threadName, executorService);
+            startStreamForward(StreamSocket.forSocket(client), StreamSocket.forSocket(server), threadName, executorService);
+            this.socket = null;
         } catch (IOException e) {
             log.debug("start forward failed: socket={}", socket, e);
+            ReverseProxy.closeQuietly(client);
         } catch (Exception e) {
             log.warn("start forward failed: socket={}", socket, e);
+            ReverseProxy.closeQuietly(client);
         } finally {
             close();
         }
     }
 
-    static void startCountDownStreamForward(Socket client, Socket server, String threadName, ExecutorService executorService) throws IOException, InterruptedException {
-        try (InputStream serverIn = server.getInputStream();
-             OutputStream serverOut = server.getOutputStream();
-             InputStream clientIn = client.getInputStream();
-             OutputStream clientOut = client.getOutputStream()) {
-            CountDownShutdownListener listener = new CountDownShutdownListener(threadName);
-            StreamSocket s1 = StreamSocket.forSocket(server);
-            StreamSocket s2 = StreamSocket.forSocket(client);
-            executorService.submit(new StreamPipe(s1, serverIn, s2, clientOut, listener));
-            executorService.submit(new StreamPipe(s2, clientIn, s1, serverOut, listener));
-            listener.waitCountDown();
+    static void startStreamForward(StreamSocket client, StreamSocket server, String threadName, ExecutorService executorService) throws IOException {
+        InputStream serverIn = null, clientIn = null;
+        OutputStream serverOut = null, clientOut = null;
+        try {
+            ShutdownListener listener = new SocksShutdownListener(threadName);
+            serverIn = server.getInputStream();
+            serverOut = server.getOutputStream();
+            clientIn = client.getInputStream();
+            clientOut = client.getOutputStream();
+            executorService.submit(new StreamPipe(server, serverIn, client, clientOut, listener));
+            executorService.submit(new StreamPipe(client, clientIn, server, serverOut, listener));
+        } catch (Exception e) {
+            ReverseProxy.closeQuietly(serverIn);
+            ReverseProxy.closeQuietly(clientIn);
+            ReverseProxy.closeQuietly(serverOut);
+            ReverseProxy.closeQuietly(clientOut);
+            throw e;
         }
     }
 

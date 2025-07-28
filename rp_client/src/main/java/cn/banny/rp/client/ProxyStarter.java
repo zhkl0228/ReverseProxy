@@ -116,7 +116,7 @@ class ProxyStarter implements Runnable {
             if (connectTimeoutInMillis > 0) {
                 client.connect(new InetSocketAddress(host, port), connectTimeoutInMillis);
             } else {
-                client.connect(new InetSocketAddress(host, port), 3000);
+                client.connect(new InetSocketAddress(host, port), 5000);
             }
             serverIn = server.getInputStream();
             clientIn = client.getInputStream();

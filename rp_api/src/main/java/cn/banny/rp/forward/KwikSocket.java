@@ -43,10 +43,12 @@ public class KwikSocket extends StreamSocket implements Closeable {
         return 0x4000;
     }
 
+    @Override
     public InputStream getInputStream() {
         return stream.getInputStream();
     }
 
+    @Override
     public OutputStream getOutputStream() {
         return stream.getOutputStream();
     }

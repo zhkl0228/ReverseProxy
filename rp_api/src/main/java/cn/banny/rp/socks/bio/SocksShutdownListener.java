@@ -45,12 +45,14 @@ public class SocksShutdownListener implements ShutdownListener {
     }
 
     @Override
-    public synchronized void onShutdownOutput(StreamSocket socket) {
+    public synchronized boolean onShutdownOutput(StreamSocket socket) {
         if (socket == in) {
             log.debug("onShutdownOutput close socket: {}", socket);
             ReverseProxy.closeQuietly(socket);
+            return true;
         } else {
             out = socket;
+            return false;
         }
     }
 

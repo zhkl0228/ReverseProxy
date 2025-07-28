@@ -7,10 +7,16 @@ import cn.banny.rp.server.AbstractRoute;
 
 public enum PortForwarderType implements ForwarderType {
 
+    @Deprecated
     BIO,
+
+    @Deprecated
     NIO,
+
     AIO,
+
     NewBIO,
+
     Kwik;
 
     @Deprecated

@@ -337,30 +337,22 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 					encryptedIn.compact();
 				}
 
-				if(log.isDebugEnabled()) {
-                    log.debug("doHandshake encryptedIn={}, decryptedIn={}", encryptedIn, decryptedIn);
-				}
+				log.debug("doHandshake encryptedIn={}, decryptedIn={}", encryptedIn, decryptedIn);
 				break;
 			case NEED_WRAP:
-				if(log.isDebugEnabled()) {
-                    log.debug("doHandshake encryptedOut={}, decryptedOut={}", encryptedOut, decryptedOut);
-				}
+				log.debug("doHandshake encryptedOut={}, decryptedOut={}", encryptedOut, decryptedOut);
 
 				decryptedOut.flip();
 				result = engine.wrap(decryptedOut, encryptedOut);
 				decryptedOut.compact();
 
-				if(log.isDebugEnabled()) {
-                    log.debug("doHandshake encryptedOut={}, decryptedOut={}", encryptedOut, decryptedOut);
-				}
+				log.debug("doHandshake encryptedOut={}, decryptedOut={}", encryptedOut, decryptedOut);
 
 				encryptedOut.flip();
 				session.write(encryptedOut);
 				encryptedOut.compact();
 
-				if(log.isDebugEnabled()) {
-                    log.debug("doHandshake encryptedOut={}, decryptedOut={}", encryptedOut, decryptedOut);
-				}
+				log.debug("doHandshake encryptedOut={}, decryptedOut={}", encryptedOut, decryptedOut);
 				break;
 			case FINISHED:
 				if (log.isDebugEnabled()) {

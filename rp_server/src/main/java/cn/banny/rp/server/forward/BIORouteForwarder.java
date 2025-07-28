@@ -3,6 +3,7 @@ package cn.banny.rp.server.forward;
 import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.forward.ForwarderListener;
 import cn.banny.rp.forward.RouteForwarder;
+import cn.banny.rp.forward.StreamSocket;
 import cn.banny.rp.server.AbstractRoute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,20 +50,25 @@ class BIORouteForwarder extends AbstractChannelForwarder implements RouteForward
         log.debug("start accept channel socket on port: {}", serverSocket.getLocalPort());
         DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
         route.sendRequest(startProxyBuffer);
-        try (Socket client = serverSocket.accept();
-             Socket server = this.socket) {
-            String threadName = dateFormat.format(new Date()) + "RouteForwarder => " +
-                    client.getRemoteSocketAddress() + " => " + server.getRemoteSocketAddress();
-            this.socket = null;
+        Socket client = null;
+        try {
+            client = serverSocket.accept();
             ReverseProxy.closeQuietly(serverSocket);
             serverSocket = null;
-            NewBIORouteForwarder.startCountDownStreamForward(client, server, threadName, executorService);
+            Socket server = this.socket;
+            String threadName = dateFormat.format(new Date()) + "RouteForwarder => " +
+                    client.getRemoteSocketAddress() + " => " + server.getRemoteSocketAddress();
+            NewBIORouteForwarder.startStreamForward(StreamSocket.forSocket(client), StreamSocket.forSocket(server), threadName, executorService);
+            this.socket = null;
         } catch (SocketTimeoutException e) {
             log.warn("Channel server socket accept failed: socket={}", socket, e);
+            ReverseProxy.closeQuietly(client);
         } catch (IOException e) {
             log.debug("start forward failed: socket={}", socket, e);
+            ReverseProxy.closeQuietly(client);
         } catch (Exception e) {
             log.warn("start forward failed: socket={}", socket, e);
+            ReverseProxy.closeQuietly(client);
         } finally {
             close();
         }

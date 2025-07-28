@@ -47,8 +47,11 @@ public class StreamPipe implements Runnable {
             try { in.shutdownInput(); } catch(IOException ignored) {}
             shutdownListener.onShutdownInput(in);
             try { out.shutdownOutput(); } catch(IOException ignored) {}
-            shutdownListener.onShutdownOutput(out);
+            boolean closed = shutdownListener.onShutdownOutput(out);
             shutdownListener.onStreamEnd();
+            if(closed) {
+                shutdownListener.onStreamClosed();
+            }
         }
     }
 

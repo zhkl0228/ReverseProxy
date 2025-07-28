@@ -2,6 +2,7 @@ package cn.banny.rp.client;
 
 import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.forward.KwikSocket;
+import cn.banny.rp.forward.PortForwarder;
 import cn.banny.rp.forward.StreamSocket;
 import cn.banny.rp.socks.bio.ShutdownListener;
 import cn.banny.rp.socks.bio.SocksShutdownListener;
@@ -19,10 +20,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-class KwikStarter implements Runnable {
+class KwikProxy {
 
-    private static final Logger log = LoggerFactory.getLogger(KwikStarter.class);
+    private static final Logger log = LoggerFactory.getLogger(KwikProxy.class);
 
+    private final KwikConnector connector;
     private final QuicClientConnection connection;
     private final String serverHost;
     private final int listenPort;
@@ -30,7 +32,8 @@ class KwikStarter implements Runnable {
     private final int port;
     private final byte[] uuid;
 
-    KwikStarter(QuicClientConnection connection, String serverHost, int listenPort, String host, int port, byte[] uuid) {
+    KwikProxy(KwikConnector connector, QuicClientConnection connection, String serverHost, int listenPort, String host, int port, byte[] uuid) {
+        this.connector = connector;
         this.connection = connection;
         this.serverHost = serverHost;
         this.listenPort = listenPort;
@@ -39,11 +42,10 @@ class KwikStarter implements Runnable {
         this.uuid = uuid;
     }
 
-    @Override
-    public void run() {
-        log.debug("Start kwik starter: server={}:{}", serverHost, listenPort);
+    final void forward() {
+        log.debug("Start kwik proxy: server={}:{}", serverHost, listenPort);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String threadName = String.format("[%s]KwikStarter@0x%x %s:%d => %s:%d", dateFormat.format(new Date()), hashCode() & 0xffffffffL, serverHost, listenPort, host, port);
+        String threadName = String.format("[%s]KwikProxy@0x%x %s:%d => %s:%d", dateFormat.format(new Date()), hashCode() & 0xffffffffL, serverHost, listenPort, host, port);
         Thread.currentThread().setName(threadName);
 
         Socket client = null;
@@ -53,15 +55,13 @@ class KwikStarter implements Runnable {
         OutputStream clientOut = null;
         KwikSocket server = null;
         try {
-            log.debug("Try open kwik stream");
             long start = System.currentTimeMillis();
-            tech.kwik.core.QuicStream clientStream = connection.createStream(true);
+            final tech.kwik.core.QuicStream clientStream = connection.createStream(true);
+            log.debug("Try open kwik stream: {}", clientStream);
             server = new KwikSocket(connection, clientStream);
             serverOut = server.getOutputStream();
-            if (uuid != null) {
-                serverOut.write(uuid);
-                serverOut.flush();
-            }
+            serverOut.write(uuid);
+            serverOut.flush();
             serverIn = server.getInputStream();
             long connectServerOffset = System.currentTimeMillis() - start;
 
@@ -73,7 +73,17 @@ class KwikStarter implements Runnable {
             long connectClientOffset = System.currentTimeMillis() - start;
             log.debug("Connect kwik {}:{}: connectServerOffset={}ms, connectClientOffset={}ms, clientStream={}", serverHost, listenPort, connectServerOffset, connectClientOffset, clientStream);
 
-            ShutdownListener listener = new SocksShutdownListener(null);
+            ShutdownListener listener = new SocksShutdownListener(null) {
+                @Override
+                public void onStreamClosed() {
+                    if (connector.closed || clientStream.getStreamId() >= PortForwarder.MAX_OPEN_BIDIRECTIONAL_STREAMS) {
+                        connection.close();
+                    } else {
+                        connector.connections.offer(connection);
+                    }
+                    log.debug("onStreamClosed size={}, streamId={}", connector.connections.size(), clientStream.getStreamId());
+                }
+            };
             StreamSocket clientStreamSocket = StreamSocket.forSocket(client);
             String name = threadName + " " + clientStream;
             new Thread(new StreamPipe(server, serverIn, clientStreamSocket, clientOut, listener), name).start();
@@ -85,6 +95,7 @@ class KwikStarter implements Runnable {
             ReverseProxy.closeQuietly(clientOut);
             ReverseProxy.closeQuietly(server);
             ReverseProxy.closeQuietly(client);
+            connection.close();
             log.info("parseKwikProxy client={}:{}, server={}:{}", host, port, serverHost, listenPort, e);
         }
     }
