@@ -14,7 +14,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 
@@ -69,9 +68,60 @@ public class SocksHandler implements Runnable {
             case 0x5:
                 handleV5(dis, inputStream, outputStream);
                 break;
+            case 'C': // https proxy Connect
+                handleHttpsProxy(inputStream, outputStream);
+                break;
             default:
                 throw new IOException("Not socks request");
         }
+    }
+
+    private void handleHttpsProxy(InputStream inputStream, OutputStream outputStream) throws IOException {
+        BufferedReader clientReader = new BufferedReader(new InputStreamReader(inputStream));
+        PrintWriter clientWriter = new PrintWriter(outputStream, false);
+        String requestLine = clientReader.readLine();
+        if (requestLine == null || requestLine.trim().isEmpty()) {
+            throw new IOException("Not https request: " + requestLine);
+        }
+        // 解析请求行
+        String[] parts = requestLine.split(" ");
+        if (parts.length != 3) {
+            throw new IOException("Bad Request: " + requestLine);
+        }
+
+        String method = parts[0];
+        String url = parts[1];
+        String httpVersion = parts[2];
+        if(!"CONNECT".equals("C" + method)) {
+            throw new IOException("Unsupported method: " + requestLine);
+        }
+        String[] hostPort = url.split(":");
+        if (hostPort.length != 2) {
+            throw new IOException("Bad URL: " + url);
+        }
+        String host = hostPort[0];
+        int port;
+        try {
+            port = Integer.parseInt(hostPort[1]);
+        } catch (NumberFormatException e) {
+            throw new IOException("Bad URL: " + url);
+        }
+
+        DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
+        String threadName = dateFormat.format(new Date()) + "HTTPS => " +
+                host + ":" + port;
+
+        Socket socket = connectSocket(SocketType.Https, new InetSocketAddress(host, port));
+        clientWriter.println(httpVersion + " 200 Connection Established\r");
+        clientWriter.println("Proxy-agent: ReverseProxy/1.0.0\r");
+        clientWriter.println();
+        clientWriter.flush();
+
+        ShutdownListener listener = new SocksShutdownListener(threadName);
+        StreamSocket s1 = StreamSocket.forSocket(this.socket);
+        StreamSocket s2 = StreamSocket.forSocket(socket);
+        executorService.submit(new StreamPipe(s1, inputStream, s2, socket.getOutputStream(), listener));
+        executorService.submit(new StreamPipe(s2, socket.getInputStream(), s1, outputStream, listener));
     }
 
     private Socket connectSocket(SocketType socketType, InetSocketAddress address) throws IOException {
@@ -136,15 +186,9 @@ public class SocksHandler implements Runnable {
             throw new IOException("Unsupported tcp address type: " + addrType);
         }
 
-        InetSocketAddress socketAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
-        byte[] ipv4 = socketAddress.getAddress().getAddress();
-        if (ipv4.length != 4) {
-            throw new IOException("ipv4 failed: " + Arrays.toString(ipv4));
-        }
-
         dos.writeInt(0x5000001);
-        dos.write(ipv4);
-        dos.writeShort(socketAddress.getPort());
+        dos.write(new byte[4]);
+        dos.writeShort(0);
         dos.flush();
 
         ShutdownListener listener = new SocksShutdownListener(builder.toString());
@@ -193,14 +237,9 @@ public class SocksHandler implements Runnable {
             builder.append(address.getHostAddress()).append(":").append(port);
         }
 
-        InetSocketAddress socketAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
-        ipv4 = socketAddress.getAddress().getAddress();
-        if (ipv4.length != 4) {
-            throw new IOException("ipv4 failed: " + Arrays.toString(ipv4));
-        }
         dos.writeShort(0x5a);
-        dos.writeShort(port);
-        dos.write(ipv4);
+        dos.writeShort(0);
+        dos.write(new byte[4]);
         dos.flush();
 
         ShutdownListener listener = new SocksShutdownListener(builder.toString());
