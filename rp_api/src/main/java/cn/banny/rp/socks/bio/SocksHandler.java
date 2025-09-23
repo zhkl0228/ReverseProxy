@@ -125,10 +125,12 @@ public class SocksHandler implements Runnable {
     }
 
     private Socket connectSocket(SocketType socketType, InetSocketAddress address) throws IOException {
-        if (socketFactory != null) {
-            return socketFactory.connectSocket(socketType, address);
+        Socket socket;
+        if (socketFactory != null &&
+                (socket = socketFactory.connectSocket(socketType, address)) != null) {
+            return socket;
         }
-        Socket socket = new Socket();
+        socket = new Socket();
         try {
             socket.setSoTimeout(SO_TIMEOUT);
             socket.connect(address, CONNECT_TIMEOUT);
