@@ -1058,7 +1058,9 @@ void stop_rp(rp *rp) {
 
 	// wait for all tasks to finish, closing the threads, clearing the memory.
 	debug("pthread_join");
-	pthread_join(rp->thread, NULL);
+	if(rp->thread) {
+	    pthread_join(rp->thread, NULL);
+	}
 
 	rp_destroy(rp);
 }
