@@ -1023,7 +1023,7 @@ static void* run(void *arg) {
         rp->alive_check_callback(rp, 0);
     }
 	debug("thread finished can_stop=%d", rp->can_stop);
-	close_rp(rp, "finished.");
+	close_rp(rp, "finished");
 	return NULL;
 }
 
@@ -1060,6 +1060,7 @@ void stop_rp(rp *rp) {
 	debug("pthread_join");
 	if(rp->thread) {
 	    pthread_join(rp->thread, NULL);
+	    rp->thread = NULL;
 	}
 
 	rp_destroy(rp);
