@@ -3,13 +3,11 @@ package cn.banny.rp.server.socks;
 import cn.banny.rp.auth.AuthHandler;
 import cn.banny.rp.server.ServerHandler;
 
-import java.util.concurrent.ThreadFactory;
-
 /**
  * @author zhkl0228
  *
  */
-public interface ProxyServer extends ThreadFactory, SocketFactory {
+public interface ProxyServer extends SocketFactory {
 	
 	void setHandler(ServerHandler handler);
 	

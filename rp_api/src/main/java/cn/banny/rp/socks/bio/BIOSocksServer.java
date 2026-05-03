@@ -11,14 +11,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
-public class BIOSocksServer implements SocksServer, Runnable, ThreadFactory {
+public class BIOSocksServer implements SocksServer, Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(BIOSocksServer.class);
 
@@ -29,21 +25,12 @@ public class BIOSocksServer implements SocksServer, Runnable, ThreadFactory {
         this.bindAddress = bindAddress;
     }
 
-    @Override
-    public Thread newThread(Runnable runnable) {
-        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-        thread.setDaemon(true);
-        DateFormat dateFormat = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]");
-        thread.setName(dateFormat.format(new Date()) + getClass().getSimpleName());
-        return thread;
-    }
-
     private ExecutorService executorService;
     private ServerSocket serverSocket;
 
     @Override
     public void start() throws Exception {
-        executorService = Executors.newCachedThreadPool(this);
+        executorService = Executors.newVirtualThreadPerTaskExecutor();
 
         serverSocket = serverSocketFactory == null ? new ServerSocket() : serverSocketFactory.newServerSocket();
         serverSocket.bind(bindAddress);

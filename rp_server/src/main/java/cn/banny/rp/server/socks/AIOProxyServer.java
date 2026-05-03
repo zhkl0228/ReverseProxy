@@ -35,7 +35,7 @@ public class AIOProxyServer extends AbstractProxyServer<AsynchronousSocketChanne
 	
 	@Override
 	public void initialize() throws Exception {
-		channelGroup = AsynchronousChannelGroup.withThreadPool(Executors.newCachedThreadPool(this));
+		channelGroup = AsynchronousChannelGroup.withThreadPool(Executors.newVirtualThreadPerTaskExecutor());
 		server = AsynchronousServerSocketChannel.open(channelGroup);
 		server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
 		server.bind(new InetSocketAddress(port));

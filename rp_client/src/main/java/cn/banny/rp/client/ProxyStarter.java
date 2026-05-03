@@ -124,8 +124,8 @@ class ProxyStarter implements Runnable {
             ShutdownListener listener = new SocksShutdownListener(null);
             StreamSocket s1 =  StreamSocket.forSocket(server);
             StreamSocket s2 =  StreamSocket.forSocket(client);
-            new Thread(new StreamPipe(s1, serverIn, s2, clientOut, listener), threadName).start();
-            new Thread(new StreamPipe(s2, clientIn, s1, serverOut, listener), threadName).start();
+            Thread.ofVirtual().name(threadName).start(new StreamPipe(s1, serverIn, s2, clientOut, listener));
+            Thread.ofVirtual().name(threadName).start(new StreamPipe(s2, clientIn, s1, serverOut, listener));
         } catch (Exception e) {
             ReverseProxy.closeQuietly(serverIn);
             ReverseProxy.closeQuietly(clientIn);

@@ -4,7 +4,6 @@ import cn.banny.rp.ReverseProxy;
 import cn.banny.rp.forward.PortForwarder;
 import cn.banny.rp.forward.RouteForwarder;
 import cn.banny.rp.server.AbstractRoute;
-import org.apache.mina.util.DaemonThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,7 @@ class BIOPortForwarder extends AbstractPortForwarder implements PortForwarder, R
 
     @Override
     public int start() throws IOException {
-        executorService = Executors.newCachedThreadPool(new DaemonThreadFactory());
+        executorService = Executors.newVirtualThreadPerTaskExecutor();
 
         canStop = false;
         serverSocket = new ServerSocket();

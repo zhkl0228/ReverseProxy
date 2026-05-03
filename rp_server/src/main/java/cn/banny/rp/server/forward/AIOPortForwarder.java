@@ -36,7 +36,7 @@ class AIOPortForwarder extends AbstractPortForwarder implements PortForwarder {
 	 */
 	@Override
 	public int start() throws IOException {
-		channelGroup = AsynchronousChannelGroup.withThreadPool(Executors.newCachedThreadPool(this));
+		channelGroup = AsynchronousChannelGroup.withThreadPool(Executors.newVirtualThreadPerTaskExecutor());
 		server = AsynchronousServerSocketChannel.open(channelGroup);
 		server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
 		server.bind(createBindAddress());

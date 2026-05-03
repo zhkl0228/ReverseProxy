@@ -48,8 +48,8 @@ public class NIOProxyServer extends AbstractProxyServer<SocketChannel> implement
 		server.register(selector, SelectionKey.OP_ACCEPT, this);
 		
 		dispatcher = new NIOSocketSessionDispatcher(ByteBuffer.allocateDirect(1024 * 5));
-		
-		newThread(this).start();
+
+		Thread.ofVirtual().name(getClass().getSimpleName() + ", port=" + port).start(this);
 	}
 
 	/* (non-Javadoc)

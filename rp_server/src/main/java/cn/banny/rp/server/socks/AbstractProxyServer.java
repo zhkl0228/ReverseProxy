@@ -91,7 +91,7 @@ public abstract class AbstractProxyServer<T> extends ForwarderAware implements P
 
 	private RouteWrapper selectRoute(List<RouteWrapper> list) {
 		Collections.shuffle(list);
-		return list.isEmpty() ? null : list.get(0);
+		return list.isEmpty() ? null : list.getFirst();
 	}
 	
 	private ServerHandler handler;
@@ -112,11 +112,6 @@ public abstract class AbstractProxyServer<T> extends ForwarderAware implements P
 	@Override
 	public final void setAuthHandler(AuthHandler authHandler) {
 		this.authHandler = authHandler;
-	}
-
-	@Override
-	public Thread newThread(Runnable r) {
-		return new Thread(r, getClass().getSimpleName() + ", port=" + port);
 	}
 
 	final InetAddress addForward(T socket, String host, int port, ForwarderListener listener, String user, String pass) throws IOException {

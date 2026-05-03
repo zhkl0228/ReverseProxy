@@ -83,9 +83,7 @@ public class NIOReverseProxyClient extends AbstractReverseProxyClient implements
 		
 		canStop = false;
 
-		Thread thread = new Thread(this);
-		thread.setDaemon(true);
-		thread.start();
+		Thread.ofVirtual().start(this);
 	}
 
 	/* (non-Javadoc)

@@ -153,9 +153,7 @@ public class SSLReverseProxyClient extends AbstractReverseProxyClient implements
 		
 		canStop = false;
 
-		Thread thread = new Thread(this);
-		thread.setDaemon(true);
-		thread.start();
+		Thread.ofVirtual().start(this);
 	}
 
 	/* (non-Javadoc)

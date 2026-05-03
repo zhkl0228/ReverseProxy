@@ -5,7 +5,6 @@ import cn.banny.rp.forward.PortForwarder;
 import cn.banny.rp.forward.RouteForwarder;
 import cn.banny.rp.server.AbstractRoute;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
-import org.apache.mina.util.DaemonThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,7 @@ class NewBIOPortForwarder extends AbstractPortForwarder implements PortForwarder
 
     @Override
     public int start() throws IOException {
-        executorService = Executors.newCachedThreadPool(new DaemonThreadFactory());
+        executorService = Executors.newVirtualThreadPerTaskExecutor();
 
         canStop = false;
         clientServer = new ServerSocket();

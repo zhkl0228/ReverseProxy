@@ -87,11 +87,8 @@ public abstract class AbstractPortForwarder extends ForwarderAware implements Po
 			InetAddress localAddr, int localPort) {
 	}
 
-	@Override
-	public final Thread newThread(Runnable r) {
-		Thread thread = new Thread(r, getClass().getSimpleName() + ", in=" + inPort + ", host=" + outHost + ", out=" + outPort);
-		thread.setDaemon(true);
-		return thread;
+	protected final Thread newThread(Runnable r) {
+		return Thread.ofVirtual().name(getClass().getSimpleName() + ", in=" + inPort + ", host=" + outHost + ", out=" + outPort).unstarted(r);
 	}
 
 }

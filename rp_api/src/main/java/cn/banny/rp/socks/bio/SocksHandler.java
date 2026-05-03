@@ -35,9 +35,7 @@ public class SocksHandler implements Runnable {
     }
 
     public void handle() {
-        Thread thread = new Thread(this, getClass().getSimpleName() + "[" + socket + "]");
-        thread.setDaemon(true);
-        thread.start();
+        Thread.ofVirtual().name(getClass().getSimpleName() + "[" + socket + "]").start(this);
     }
 
     @Override
